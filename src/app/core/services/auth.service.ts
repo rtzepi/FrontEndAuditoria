@@ -20,16 +20,27 @@ export class AuthService {
   ) {}
 
   login(username: string, password: string): Observable<IResult<string>> {
-    return this.http.post<IResult<string>>(`${this.apiUrl}/login`, { Username: username, Password: password })
+    return this.http.post<IResult<any>>(`${this.apiUrl}/login`, { Username: username, Password: password })
       .pipe(
         tap(
-          response => {
+          (response: any) => {
             if (response && response.isSuccess) {
               const token = response.value;
-              this.localStorageS.set('token', JSON.stringify((token)));
+              this.localStorageS.set('token', JSON.stringify((token?.token)));
             }
           }
         )
       )
+  }
+
+  logout() {
+  }
+
+
+  changePassword(newPassword: string, confirmPassword: string): Observable<IResult<string>> {
+
+    // Realizar la solicitud HTTP para cambiar la contraseña
+    return this.http.post<IResult<string>>(`${this.apiUrl}/changePassword`, {password: newPassword, confirmPassword })
+      
   }
 }

@@ -57,6 +57,7 @@ export class LoginComponent {
           //     this.errorMessage = 'Error al redirigir. Inténtalo de nuevo.';
           //   }
           // });
+          console.log(response.value?.isFirstLogin)
           if (response.value?.isFirstLogin == false) { //Ya inicio session
             this.router.navigate(['/dashboard']) //ver la ruta exacta
           }

@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import Swal from 'sweetalert2';
+import { error } from 'console';
 
 @Component({
   selector: 'app-change-password',
@@ -13,11 +14,12 @@ import Swal from 'sweetalert2';
   styleUrls: ['./change-password.component.scss'],
 })
 export class ChangePasswordComponent {
+  [x: string]: any;
   changePasswordForm: FormGroup;
   isLoading: boolean = false;
   errorMessage: string = '';
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(private fb: FormBuilder, private router: Router, private authService: AuthService) {
     this.changePasswordForm = this.fb.group(
       {
         newPassword: ['', [Validators.required, Validators.minLength(6)]],
@@ -46,16 +48,29 @@ export class ChangePasswordComponent {
     if (this.changePasswordForm.invalid) {
       return;
     }
-
+  
     this.isLoading = true;
     this.errorMessage = '';
-
+  
     const { newPassword, confirmPassword } = this.changePasswordForm.value;
-
-    
-    setTimeout(() => {
-      Swal.fire('Éxito', 'Contraseña cambiada correctamente.', 'success');
-      this.router.navigate(['/dashboard']);
-    }, 1500);
+  
+    // Llamar al método changePassword del AuthService
+    this.authService.changePassword(newPassword, confirmPassword).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        if (response.isSuccess) {
+          Swal.fire('Éxito', 'Contraseña cambiada correctamente.', 'success');
+          this.router.navigate(['/dashboard/dashboard']);
+        } else {
+          this.errorMessage = response.error || 'Error al cambiar la contraseña.';
+          Swal.fire('Error', this.errorMessage, 'error');
+        }
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.errorMessage = 'Error al cambiar la contraseña. Por favor, inténtalo de nuevo.';
+        Swal.fire('Error', this.errorMessage, 'error');
+      }
+    });
   }
 }
