@@ -11,7 +11,7 @@ import Swal from 'sweetalert2';
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
-  providers: [AuthService] // Proporciona el servicio aquí
+  providers: [AuthService]
 })
 export class LoginComponent {
   loginForm: FormGroup;
@@ -21,7 +21,7 @@ export class LoginComponent {
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService, // Ahora el servicio está disponible
+    private authService: AuthService,
     private router: Router
   ) {
     this.loginForm = this.fb.group({
@@ -47,7 +47,6 @@ export class LoginComponent {
         console.log('Respuesta del servicio:', response);
 
         if (response.isSuccess) {
-
           const redirectUrl = response.isFirstLogin ? '/change-password' : '/dashboard';
           this.router.navigate([redirectUrl]).then(success => {
             if (success) {
