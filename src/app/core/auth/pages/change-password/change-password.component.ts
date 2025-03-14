@@ -39,6 +39,7 @@ export class ChangePasswordComponent {
     } else {
       return null;
     }
+    return null;
   }
 
   onSubmit() {

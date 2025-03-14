@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import Swal from 'sweetalert2';
+import { IResult } from '../../../../shared/models/IResult';
 
 @Component({
   selector: 'app-login',
@@ -43,21 +44,27 @@ export class LoginComponent {
     const { userName, password } = this.loginForm.value;
 
     this.authService.login(userName, password).subscribe({
-      next: (response) => {
+      next: (response: IResult<any>) => {
         console.log('Respuesta del servicio:', response);
 
         if (response.isSuccess) {
-          const redirectUrl = response.isFirstLogin ? '/change-password' : '/dashboard';
-          this.router.navigate([redirectUrl]).then(success => {
-            if (success) {
-              console.log(`Redirección exitosa a ${redirectUrl}`);
-            } else {
-              console.error(`Error al navegar a ${redirectUrl}`);
-              this.errorMessage = 'Error al redirigir. Inténtalo de nuevo.';
-            }
-          });
+          // const redirectUrl = response.isFirstLogin ? '/change-password' : '/dashboard';
+          // this.router.navigate([redirectUrl]).then(success => {
+          //   if (success) {
+          //     console.log(`Redirección exitosa a ${redirectUrl}`);
+          //   } else {
+          //     console.error(`Error al navegar a ${redirectUrl}`);
+          //     this.errorMessage = 'Error al redirigir. Inténtalo de nuevo.';
+          //   }
+          // });
+          if (response.value?.isFirstLogin == false) { //Ya inicio session
+            this.router.navigate(['/dashboard']) //ver la ruta exacta
+          }
+          else{//Reedirihimos a cambiar su contraseña
+            this.router.navigate(['/change-password']) //ver la ruta exacta
+          }
         } else {
-          this.errorMessage = response.message || 'Error en autenticación.';
+          this.errorMessage = response.error || 'Error en autenticación.';
         }
       },
       error: (error) => {

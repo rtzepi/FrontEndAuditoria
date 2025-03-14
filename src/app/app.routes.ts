@@ -4,21 +4,10 @@ import { MainLayoutComponent } from './core/layout/main-layout/main-layout.compo
 import { PublicLayoutComponent } from './core/layout/public-layout/public-layout.component';
 
 export const routes: Routes = [
-    {
-        path: '',
-        component: LoginComponent,
-        children: [
-          {
-            path: '',
-            loadChildren: () => import('./core/public/public.routes').then(m => m.PUBLIC_ROUTES)
-          },
-          {
-            path: 'login',
-            component: LoginComponent // Ruta para el login
-          }
-        ]
-      },
-    
+  {
+    path: '',
+    loadChildren: () => import('./core/auth/auth.routes').then(m => m.AuthRoutes)
+  } ,   
   {
     path: '',
     component: MainLayoutComponent, // Layout principal para rutas protegidas
