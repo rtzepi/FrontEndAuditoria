@@ -1,5 +1,5 @@
 <div class="container">
-  <!-- Sección de imágenes -->
+ 
   <div class="image-section">
     <div class="image-grid">
       <img src="/img/1.jpg" alt="Herramientas">
@@ -12,13 +12,13 @@
 <div class="login-container">
   <h2>Bienvenido a Ferretería "El Cóndor"</h2>
 
-  <!-- Mensaje de error general -->
+
   <div *ngIf="formSubmitted && loginForm.invalid" class="general-error-message" aria-live="polite">
     <small>Es necesario llenar todos los campos correctamente.</small>
   </div>
 
   <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-    <!-- Campo Nombre de Usuario -->
+
     <div class="form-group">
       <label for="userName">Nombre de Usuario:</label>
       <input type="text" id="userName" formControlName="userName" placeholder="Nombre de usuario" required />
@@ -27,7 +27,7 @@
       </div>
     </div>
 
-    <!-- Campo Contraseña -->
+
     <div class="form-group">
       <label for="password">Contraseña:</label>
       <input type="password" id="password" formControlName="password" placeholder="Ingrese la contraseña" required />
@@ -37,12 +37,12 @@
       </div>
     </div>
 
-    <!-- Mensaje de carga mientras se envía el formulario -->
+
     <div *ngIf="isLoading" class="loading-message">
       <small>Validando credenciales...</small>
     </div>
 
-    <!-- Botón de Enviar -->
+
     <button type="submit" class="btn-enter" [disabled]="isLoading">
       {{ isLoading ? 'Cargando...' : 'Ingresar' }}
     </button>

@@ -48,21 +48,12 @@ export class LoginComponent {
         console.log('Respuesta del servicio:', response);
 
         if (response.isSuccess) {
-          // const redirectUrl = response.isFirstLogin ? '/change-password' : '/dashboard';
-          // this.router.navigate([redirectUrl]).then(success => {
-          //   if (success) {
-          //     console.log(`Redirección exitosa a ${redirectUrl}`);
-          //   } else {
-          //     console.error(`Error al navegar a ${redirectUrl}`);
-          //     this.errorMessage = 'Error al redirigir. Inténtalo de nuevo.';
-          //   }
-          // });
           console.log(response.value?.isFirstLogin)
-          if (response.value?.isFirstLogin == false) { //Ya inicio session
-            this.router.navigate(['/dashboard']) //ver la ruta exacta
+          if (response.value?.isFirstLogin == false) { 
+            this.router.navigate(['/sale']) 
           }
-          else{//Reedirihimos a cambiar su contraseña
-            this.router.navigate(['/change-password']) //ver la ruta exacta
+          else{
+            this.router.navigate(['/change-password']) 
           }
         } else {
           this.errorMessage = response.error || 'Error en autenticación.';

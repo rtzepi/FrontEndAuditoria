@@ -31,7 +31,7 @@ export class ChangePasswordComponent {
     );
   }
 
-  // Validador personalizado para verificar si las contraseñas coinciden
+
   passwordMatchValidator(group: FormGroup) {
     const password = group.get('newPassword')?.value;
     const confirmPassword = group.get('confirmPassword')?.value;
@@ -54,7 +54,7 @@ export class ChangePasswordComponent {
   
     const { newPassword, confirmPassword } = this.changePasswordForm.value;
   
-    // Llamar al método changePassword del AuthService
+  
     this.authService.changePassword(newPassword, confirmPassword).subscribe({
       next: (response) => {
         this.isLoading = false;

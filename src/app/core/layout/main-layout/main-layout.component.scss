@@ -1,29 +1,46 @@
-.sidenav-container {
-height: 100vh;
+.container {
+  height: 100vh;
 }
 
 .sidenav {
-width: 250px;
+  width: 250px;
+  background-color: #ff9800; /* Color del menú lateral */
+  color: white;
 }
 
-.mat-toolbar {
-display: flex;
-align-items: center;
-justify-content: space-between;
-height: 100px;
+.logo {
+  text-align: center;
+  padding: 15px;
 }
 
-.mat-nav-list a {
-text-decoration: none;
-color: inherit;
-display: flex;
-align-items: center;
+mat-nav-list a {
+  color: white;
 }
 
-.mat-nav-list mat-icon {
-margin-right: 10px;
+.toolbar {
+  background-color: #fff;
+  color: #333;
+  display: flex;
+  align-items: center;
 }
 
-.content {
-padding: 20px;
+.spacer {
+  flex: 1;
+}
+
+.notification {
+  margin-right: 10px;
+}
+
+.username {
+  font-weight: bold;
+}
+
+.page-content {
+  padding: 20px;
+}
+
+.welcome-image {
+  max-width: 100%;
+  height: auto;
 }
