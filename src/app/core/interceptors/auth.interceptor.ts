@@ -9,10 +9,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService)
   const currentUser = localStorageService.get('token');
 
-  console.log(currentUser)
-
-  console.log(`Bearer ${JSON.parse(currentUser || '')}`)
-
   const cloneReq = currentUser
     ? req.clone({
       setHeaders: {

@@ -1,0 +1,12 @@
+
+
+<div>
+    <div  *ngFor="let menu of menus">
+        <div>
+            <button [routerLink]="menu.route">
+                <mat-icon>{{ menu.icon }}</mat-icon>
+                <span>{{ menu.nameMenu }}</span>
+            </button>
+        </div>
+    </div>
+</div>  

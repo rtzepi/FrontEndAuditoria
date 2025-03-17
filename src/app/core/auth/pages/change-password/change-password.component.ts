@@ -60,7 +60,7 @@ export class ChangePasswordComponent {
         this.isLoading = false;
         if (response.isSuccess) {
           Swal.fire('Éxito', 'Contraseña cambiada correctamente.', 'success');
-          this.router.navigate(['/dashboard/dashboard']);
+          this.router.navigate(['/home']);
         } else {
           this.errorMessage = response.error || 'Error al cambiar la contraseña.';
           Swal.fire('Error', this.errorMessage, 'error');

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
@@ -19,7 +19,7 @@ export class AuthService {
     private router: Router
   ) {}
 
-  login(username: string, password: string): Observable<IResult<string>> {
+  login(username: string, password: string): Observable<IResult<any>> {
     return this.http.post<IResult<any>>(`${this.apiUrl}/login`, { Username: username, Password: password })
       .pipe(
         tap(
@@ -36,11 +36,16 @@ export class AuthService {
   logout() {
   }
 
+  changePassword(newPassword: string, confirmPassword: string): Observable<IResult<any>> {
+    return this.http.post<IResult<any>>(`${this.apiUrl}/changePassword`, {password: newPassword, confirmPassword }) 
+  }
 
-  changePassword(newPassword: string, confirmPassword: string): Observable<IResult<string>> {
+  getAccessMenus(): Observable<IResult<any>> {
+    return this.http.get<IResult<any>>(`${this.apiUrl}/Access`) 
+  }
 
-    // Realizar la solicitud HTTP para cambiar la contraseña
-    return this.http.post<IResult<string>>(`${this.apiUrl}/changePassword`, {password: newPassword, confirmPassword })
-      
+  getChildMenus(parentRoute: string): Observable<IResult<any>> {
+    const params = new HttpParams().set('parentRoute', parentRoute);
+    return this.http.get<IResult<any>>(`${this.apiUrl}/getChildMenu`, { params });
   }
 }

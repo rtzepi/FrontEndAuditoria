@@ -50,7 +50,7 @@ export class LoginComponent {
         if (response.isSuccess) {
           console.log(response.value?.isFirstLogin)
           if (response.value?.isFirstLogin == false) { 
-            this.router.navigate(['/sale']) 
+            this.router.navigate(['/home']) 
           }
           else{
             this.router.navigate(['/change-password']) 
@@ -61,6 +61,7 @@ export class LoginComponent {
       },
       error: (error) => {
         console.error('Error en autenticación:', error);
+        console.log(error)
         this.errorMessage = error.message || 'Error al comunicarse con el servidor.';
       },
       complete: () => {
