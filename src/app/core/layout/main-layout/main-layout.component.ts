@@ -37,6 +37,8 @@ export class MainLayoutComponent implements OnInit {
         console.log('Respuesta del servicio:', response);
         if (response.isSuccess) {
           this.menuItems = response.value.menus;
+
+          
           console.log(response.value.menus)
         } else {
         }

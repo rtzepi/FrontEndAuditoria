@@ -16,7 +16,6 @@ import { IResult } from '../../../../shared/models/IResult';
 })
 export class LoginComponent {
   loginForm: FormGroup;
-  errorMessage: string = '';
   formSubmitted: boolean = false;
   isLoading: boolean = false;
 
@@ -38,8 +37,13 @@ export class LoginComponent {
       return;
     }
 
-    this.isLoading = true;
-    this.errorMessage = '';
+    Swal.fire({
+      title: 'Iniciando Sesión',
+      text: 'Espere por favor...',
+      showConfirmButton: false,
+      allowOutsideClick: false
+    });
+    Swal.showLoading();
 
     const { userName, password } = this.loginForm.value;
 
@@ -48,21 +52,38 @@ export class LoginComponent {
         console.log('Respuesta del servicio:', response);
 
         if (response.isSuccess) {
-          console.log(response.value?.isFirstLogin)
-          if (response.value?.isFirstLogin == false) { 
-            this.router.navigate(['/home']) 
-          }
-          else{
-            this.router.navigate(['/change-password']) 
-          }
+          Swal.fire({
+            icon: "success",
+            title: "Acceso concedido",
+            text: "Accediendo al sistema...",
+            timer: 1000,
+            showConfirmButton: false
+          }).then(() => {
+            if (response.value?.isFirstLogin == false) { 
+              this.router.navigate(['/home']);
+            } else {
+              this.router.navigate(['/change-password']);
+            }
+          });
         } else {
-          this.errorMessage = response.error || 'Error en autenticación.';
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: response.error || "Usuario o contraseña incorrectos.",
+            timer: 3000,
+            showConfirmButton: false
+          });
         }
       },
       error: (error) => {
         console.error('Error en autenticación:', error);
-        console.log(error)
-        this.errorMessage = error.message || 'Error al comunicarse con el servidor.';
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Error al comunicarse con el servidor.",
+          timer: 3000,
+          showConfirmButton: false
+        });
       },
       complete: () => {
         this.isLoading = false;

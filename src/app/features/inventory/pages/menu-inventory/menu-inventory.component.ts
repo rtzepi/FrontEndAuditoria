@@ -6,10 +6,8 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 
-
-
 @Component({
-  selector: 'app-menu-user',
+  selector: 'app-menu-inventory',
   standalone: true,
   imports: [
     CommonModule,
@@ -17,10 +15,10 @@ import { MatCardModule } from '@angular/material/card';
     MatIconModule,
     MatCardModule
   ],
-  templateUrl: './menu-user.component.html',
-  styleUrl: './menu-user.component.scss'
+  templateUrl: './menu-inventory.component.html',
+  styleUrl: './menu-inventory.component.scss'
 })
-export class MenuUserComponent implements OnInit {
+export class MenuInventoryComponent implements OnInit {
   currentUrl: string = '';
   route = inject(Router);
   authS = inject(AuthService)
@@ -40,25 +38,11 @@ export class MenuUserComponent implements OnInit {
                 menu.icon = 'home';
                 break;
               case 'Seguridad':
-                menu.icon = 'security';
+                menu.icon = 'inventory';
                 break;
               case 'Usuario':
-                menu.icon = 'person';
+                menu.icon = 'order';
                 break;
-              case 'Role':
-                menu.icon = 'admin_panel_settings';
-                break;
-              case 'Empleado':
-                menu.icon = 'badge';
-                break;
-              case 'Menu':
-                menu.icon = 'menu';
-                break;
-              case 'Control role menu':
-                menu.icon = 'settings';
-                break;
-              default:
-                menu.icon = 'settings'; 
             }
             return menu;
           });
@@ -69,29 +53,4 @@ export class MenuUserComponent implements OnInit {
       },
     });
   }
-
-  // ngOnInit(): void {
-  //   this.currentUrl = this.route.url;
-
-  //   this.authS.getChildMenus(this.currentUrl).subscribe({
-  //     next: (response: IResult<any>) => {
-  //       if (response.isSuccess) {
-  //         console.log(response.value)
-  //         this.menus = response.value;
-  //       } else {
-  //         // this.errorMessage = response.error || 'Error en autenticación.';
-  //       }
-  //     },
-  //     error: (error) => {
-  //       console.error('Error en autenticación:', error);
-  //       console.log(error)
-  //     },
-  //     complete: () => {
-  //     },
-  //   });
-  // }
-  // menu: any = [];
-
-
-
 }

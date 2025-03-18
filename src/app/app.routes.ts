@@ -5,6 +5,7 @@ import path from 'path';
 import { Component } from '@angular/core';
 import { ChangePasswordComponent } from './core/auth/pages/change-password/change-password.component';
 import { HomeComponent } from './features/home/home.component';
+import { SalesComponent } from './features/sales/pages/sales/sales.component';
 
 export const routes: Routes = [
   {
@@ -29,12 +30,12 @@ export const routes: Routes = [
         component: HomeComponent
       },
       {
-        path: 'sale',
+        path: 'sales',
         loadChildren: () => import('./features/sales/sales.routes').then(m => m.SALES_ROUTES)
       },
       {
         path: 'inventory',
-        loadChildren: () => import('./features/inventory/inventary.routes').then(m => m.CATALOG_ROUTES)
+        loadChildren: () => import('./features/inventory/inventory.routes').then(m => m.CATALOG_ROUTES)
       },
       {
         path: 'reports',
@@ -43,6 +44,14 @@ export const routes: Routes = [
       {
         path:'security',
         loadChildren: () => import('./features/security/user.routes').then(m => m.SALES_ROUTES)
+      },
+      {
+        path:'configuration',
+        loadChildren: () => import('./features/configuration/configuration.routes').then(m => m.CONF_ROUTES)
+      },
+      {
+        path:'shopping',
+        loadChildren: () => import('./features/shopping/shopping.routes').then(m => m.SHOPPING_ROUTES)
       }
     ]
   },
