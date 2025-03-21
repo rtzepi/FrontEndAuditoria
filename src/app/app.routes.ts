@@ -42,16 +42,16 @@ export const routes: Routes = [
         loadChildren: () => import('./features/reports/reports.routes').then(m => m.REPORTS_ROUTES)
       },
       {
-        path:'security',
-        loadChildren: () => import('./features/security/user.routes').then(m => m.SALES_ROUTES)
-      },
-      {
         path:'configuration',
         loadChildren: () => import('./features/configuration/configuration.routes').then(m => m.CONF_ROUTES)
       },
       {
         path:'shopping',
         loadChildren: () => import('./features/shopping/shopping.routes').then(m => m.SHOPPING_ROUTES)
+      },
+      {
+        path:'security',
+        loadChildren: () => import('./features/security/security.routes').then(m => m.SECURITY_ROUTES)
       }
     ]
   },

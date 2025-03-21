@@ -8,11 +8,15 @@ import { SalesMenuComponent } from "./pages/sales-menu/sales-menu.component";
 
 export const SALES_ROUTES: Routes = [
     {
-    path: '',
-    component: SalesMenuComponent,
+        path: '',
+        component: SalesMenuComponent,
     },
     {
-    path: 'sales',
-    component: SalesComponent,
+        path: 'sales',
+        component: SalesComponent,
+    },
+    {
+        path: 'saleshistory',
+        component: SalesHistoryComponent,    
     }
 ];

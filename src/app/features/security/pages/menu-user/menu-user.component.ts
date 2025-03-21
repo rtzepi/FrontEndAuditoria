@@ -20,6 +20,7 @@ import { MatCardModule } from '@angular/material/card';
   templateUrl: './menu-user.component.html',
   styleUrl: './menu-user.component.scss'
 })
+
 export class MenuUserComponent implements OnInit {
   currentUrl: string = '';
   route = inject(Router);
