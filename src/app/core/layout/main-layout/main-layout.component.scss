@@ -8,6 +8,10 @@
   color: white;
 }
 
+.sidenav mat-icon {
+  margin-right: 10px; /* Espacio entre icono y texto */
+}
+
 .logo {
   text-align: center;
   padding: 15px;
@@ -15,6 +19,16 @@
 
 mat-nav-list a {
   color: white;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+
+mat-nav-list a:hover {
+  background-color: white; /* Resaltado en blanco */
+  color: #ff9800; /* Color del texto cuando se resalta */
+  border-radius: 5px;
 }
 
 .toolbar {
@@ -43,4 +57,42 @@ mat-nav-list a {
 .welcome-image {
   max-width: 100%;
   height: auto;
+}
+
+.profile-container {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.profile-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.profile-menu {
+  position: absolute;
+  right: 10px;
+  top: 50px;
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-menu button {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.profile-menu button:hover {
+  background: #f0f0f0;
 }

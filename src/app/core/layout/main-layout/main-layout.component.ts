@@ -29,7 +29,7 @@ import { IResult } from '../../../shared/models/IResult';
 })
 export class MainLayoutComponent implements OnInit {
   menuItems: any= [];
-
+  isProfileMenuOpen = false;
 
   ngOnInit(): void {
     this.authS.getAccessMenus().subscribe({
@@ -37,18 +37,12 @@ export class MainLayoutComponent implements OnInit {
         console.log('Respuesta del servicio:', response);
         if (response.isSuccess) {
           this.menuItems = response.value.menus;
-
-          
-          console.log(response.value.menus)
-        } else {
-        }
+          console.log(response.value.menus);
+        } 
       },
       error: (error) => {
         console.error('Error en autenticación:', error);
-        console.log(error)
-      },
-      complete: () => {
-      },
+      }
     });
   }
 
@@ -56,10 +50,21 @@ export class MainLayoutComponent implements OnInit {
   jwt = inject(JwtTokenService);
   authS = inject(AuthService);
 
-
-
   toggleMenu() {
     this.isMenuOpen.set(!this.isMenuOpen());
   }
 
+  toggleProfileMenu() {
+    this.isProfileMenuOpen = !this.isProfileMenuOpen;
+  }
+
+  goToProfile() {
+    console.log("Ir al perfil");
+    // Aquí podrías redirigir al usuario a su perfil
+  }
+
+  logout() {
+    console.log("Cerrar sesión");
+    // Aquí podrías llamar a un servicio para cerrar sesión
+  }
 }

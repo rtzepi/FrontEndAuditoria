@@ -2,7 +2,8 @@
     <!-- Menú lateral -->
     <mat-sidenav #sidenav mode="side" [opened]="isMenuOpen()" class="sidenav">
         <div class="logo">
-            <img src="assets/logo.png" alt="El Condor">
+            <img src="/img/CONDOR.jpeg" alt="El Condor" width="100" height="100">
+
         </div>
         <mat-nav-list>
             <a mat-list-item *ngFor="let item of menuItems" [routerLink]="item.route" routerLinkActive="active">
@@ -21,7 +22,18 @@
             <span class="title">El Condor</span>
             <span class="spacer"></span>
             <mat-icon class="notification">notifications</mat-icon>
-            <span class="username">Edwin Alvarez</span>
+            
+            <!-- Imagen de perfil con menú desplegable -->
+            <div class="profile-container" (click)="toggleProfileMenu()">
+                <img src="/img/CONDOR.jpeg" alt="Perfil" class="profile-img">
+                <span class="username">Edwin Alvarez</span>
+            </div>
+            
+            <!-- Menú emergente -->
+            <div class="profile-menu" *ngIf="isProfileMenuOpen">
+                <button mat-menu-item (click)="goToProfile()">Entrar al perfil</button>
+                <button mat-menu-item (click)="logout()">Cerrar sesión</button>
+            </div>
         </mat-toolbar>
         
         <div class="page-content">
