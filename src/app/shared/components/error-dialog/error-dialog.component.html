@@ -1,0 +1,9 @@
+<div class="error-dialog-container">
+    <h2 class="error-title">{{ data.title || 'Error' }}</h2>
+    <div class="error-content">
+    {{ data.message }}
+    </div>
+    <div class="error-actions">
+    <app-btn-accept (click)="onAccept()"></app-btn-accept>
+    </div>
+</div>

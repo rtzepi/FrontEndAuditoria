@@ -1,0 +1,39 @@
+<div class="flex flex-row gap-4">
+  <!-- Fecha de Inicio -->
+  <div class="relative">
+    <label for="startDate" class="block text-sm font-medium text-gray-700">Fecha de inicio</label>
+    <div class="relative mt-1">
+      <input #startDatePicker id="startDate" type="date"
+        class="block w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        [(ngModel)]="startDate" (ngModelChange)="onStartDateChange($event)" />
+      <button type="button" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500"
+        (click)="openDatePicker(startDatePicker)">
+        <!-- Icono de calendario -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M8 7V3m8 4V3m-9 4h10m2 0a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2h14z" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Fecha de Fin -->
+  <div class="relative">
+    <label for="endDate" class="block text-sm font-medium text-gray-700">Fecha de fin</label>
+    <div class="relative mt-1">
+      <input #endDatePicker id="endDate" type="date"
+        class="block w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        [(ngModel)]="endDate" (ngModelChange)="onEndDateChange($event)" />
+      <button type="button" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500"
+        (click)="openDatePicker(endDatePicker)">
+        <!-- Icono de calendario -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M8 7V3m8 4V3m-9 4h10m2 0a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2h14z" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>

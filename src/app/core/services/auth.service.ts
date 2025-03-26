@@ -4,7 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { LocalStorageService } from './local-storage.service';
-import { environment } from '../../../environments/environment.development';
+import { environment } from '../../../app/environments/environment.development';
 import { IResult } from '../../shared/models/IResult';
 
 @Injectable({

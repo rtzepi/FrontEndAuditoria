@@ -1,1 +1,147 @@
-<p>employee works!</p>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=add" />
+
+<div class="container">
+    <div class="header">
+        <h2>Empleados</h2>
+        <div class="header-actions">
+            <app-input-search
+                placeholder="Buscar empleados..."
+                (searchChange)="handleSearch($event)">
+            </app-input-search>
+            <button (click)="openAddEmployeeModal()" class="btn btn-primary add-employee-btn" [disabled]="isLoading">
+                <span class="material-icons">add</span>
+            </button>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Correo Electrónico</th>
+                <th>Número Telefónico</th>
+                <th>Estado</th>
+                <th>Autorización</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let employee of paginatedEmployees">
+                <td>{{ employee.idEmployee }}</td>
+                <td>
+                    <div class="profile-image-container">
+                        <img *ngIf="employee.imgBase64" 
+                            [src]="'data:image/' + (employee.image?.mimeType?.split('/')[1] || 'jpeg') + ';base64,' + employee.imgBase64" 
+                            class="profile-img" alt="Foto empleado" />
+                        {{ employee.firstName }} {{ employee.middleName }} 
+                        {{ employee.fatherLastName }} {{ employee.motherLastName }}
+                    </div>
+                </td>
+                <td>{{ employee.email }}</td>
+                <td>{{ employee.phoneNumber }}</td>
+                <td>{{ employee.status === 'E' ? 'Activo' : 'Inactivo' }}</td>
+                <td>{{ employee.isAuthorization ? 'SI' : 'NO' }}</td>
+                <td class="btn-actions">
+                    <button class="btn btn-info" [disabled]="isLoading">Editar</button>
+                    <button class="btn btn-danger" [disabled]="isLoading">Eliminar</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="pagination-controls" *ngIf="employees.length > itemsPerPage">
+        <button (click)="previousPage()" [disabled]="currentPage === 1" class="btn-pagination">
+            Anterior
+        </button>
+        <span>Página {{currentPage}} de {{totalPages}}</span>
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages" class="btn-pagination">
+            Siguiente
+        </button>
+    </div>
+</div>
+
+<div *ngIf="showModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>Agregar Empleado</h2>
+        
+        <form #employeeForm="ngForm" (ngSubmit)="addEmployee()" class="employee-form">
+            <div class="form-group">
+                <label>Primer Nombre: <span class="required">*</span></label>
+                <input type="text" [(ngModel)]="newEmployee.firstName" name="firstName" 
+                    placeholder="Miguel" required #firstName="ngModel" />
+                <div *ngIf="firstName.invalid && (firstName.dirty || firstName.touched)" class="error-message">
+                    Primer nombre es requerido
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Segundo Nombre:</label>
+                <input type="text" [(ngModel)]="newEmployee.middleName" name="middleName" placeholder="Andres"/>
+            </div>
+
+            <div class="form-group">
+                <label>Primer Apellido: <span class="required">*</span></label>
+                <input type="text" [(ngModel)]="newEmployee.fatherLastName" name="fatherLastName" 
+                    placeholder="Garcia" required #fatherLastName="ngModel" />
+                <div *ngIf="fatherLastName.invalid && (fatherLastName.dirty || fatherLastName.touched)" class="error-message">
+                    Primer apellido es requerido
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Segundo Apellido: <span class="required">*</span></label>
+                <input type="text" [(ngModel)]="newEmployee.motherLastName" name="motherLastName" 
+                    placeholder="Lopez" required #motherLastName="ngModel" />
+                <div *ngIf="motherLastName.invalid && (motherLastName.dirty || motherLastName.touched)" class="error-message">
+                    Segundo apellido es requerido
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Correo Electrónico: <span class="required">*</span></label>
+                <input type="email" [(ngModel)]="newEmployee.email" name="email" 
+                    placeholder="miguelandres@gmail.com" required email #email="ngModel" />
+                <div *ngIf="email.invalid && (email.dirty || email.touched)" class="error-message">
+                    <span *ngIf="email.errors?.['required']">Email es requerido</span>
+                    <span *ngIf="email.errors?.['email']">Formato de email inválido</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Número de Teléfono: <span class="required">*</span></label>
+                <input type="text" [(ngModel)]="newEmployee.phoneNumber" name="phoneNumber" 
+                    placeholder="45896325" required pattern="[0-9]{8,15}" #phoneNumber="ngModel" />
+                <div *ngIf="phoneNumber.invalid && (phoneNumber.dirty || phoneNumber.touched)" class="error-message">
+                    <span *ngIf="phoneNumber.errors?.['required']">Teléfono es requerido</span>
+                    <span *ngIf="phoneNumber.errors?.['pattern']">Solo números (8-15 dígitos)</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Fotografía:</label>
+                <input type="file" (change)="handleImageUpload($event)" accept="image/*" [disabled]="isLoading" />
+                <div *ngIf="imagePreview" class="image-preview-container">
+                    <h4>Vista previa:</h4>
+                    <div class="preview-image-wrapper">
+                        <img [src]="imagePreview" class="preview-img" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" 
+                        class="btn-submit"
+                        [disabled]="employeeForm.invalid || isLoading">
+                    {{ isLoading ? 'Guardando...' : 'Guardar' }}
+                </button>
+                <button type="button" 
+                        class="btn-cancel"
+                        (click)="closeModal()"
+                        [disabled]="isLoading">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

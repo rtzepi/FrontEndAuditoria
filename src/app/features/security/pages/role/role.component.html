@@ -1,1 +1,88 @@
-<p>role works!</p>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=add" />
+
+<div class="container">
+    <div class="header">
+        <h2>Roles</h2>
+        <div class="actions">
+            <input type="text" placeholder="Buscar Roles" class="search-input" />
+            <button (click)="openAddRoleModal()" class="btn btn-primary add-role-btn" [disabled]="isLoading">
+                <span class="material-icons">add</span>
+                {{ isLoading ? 'Cargando...' : '' }}
+            </button>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre del Rol</th>
+                <th>Descripción</th>
+                <th>Estado</th>
+                <th>Fecha de Creación</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let role of roles">
+                <td>{{ role.idRole }}</td>
+                <td>{{ role.roleName }}</td>
+                <td>{{ role.description || 'Sin descripción' }}</td>
+                <td>{{ role.status === 'E' ? 'Activo' : 'Inactivo' }}</td>
+                <td>{{ role.created_at | date:'mediumDate' }}</td>
+                <td>
+                    <button class="btn btn-info" [disabled]="isLoading">Editar</button>
+                    <button class="btn btn-danger" [disabled]="isLoading">Eliminar</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div *ngIf="showModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>Agregar Rol</h2>
+        
+        <form #roleForm="ngForm" (ngSubmit)="addRole()" class="role-form">
+            <div class="form-group">
+                <label>Nombre del Rol: <span class="required">*</span></label>
+                <input type="text" [(ngModel)]="newRole.roleName" name="roleName" 
+                    placeholder="Ej: admin" required #roleName="ngModel" />
+                <div *ngIf="roleName.invalid && (roleName.dirty || roleName.touched)" class="error-message">
+                    Nombre del rol es requerido
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Descripción:</label>
+                <textarea [(ngModel)]="newRole.description" name="description" 
+                    placeholder="Descripción del rol" rows="3"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Estado: <span class="required">*</span></label>
+                <select [(ngModel)]="newRole.status" name="status" required #status="ngModel">
+                    <option value="E">Activo</option>
+                    <option value="D">Inactivo</option>
+                </select>
+                <div *ngIf="status.invalid && (status.dirty || status.touched)" class="error-message">
+                    Estado es requerido
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" 
+                        class="btn-submit"
+                        [disabled]="roleForm.invalid || isLoading">
+                    {{ isLoading ? 'Guardando...' : 'Guardar' }}
+                </button>
+                <button type="button" 
+                        class="btn-cancel"
+                        (click)="closeModal()"
+                        [disabled]="isLoading">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,1 +1,133 @@
-<p>user works!</p>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=add" />
+
+<div class="container">
+    <div class="header">
+        <h2>Usuarios</h2>
+        <div class="actions">
+            <input type="text" placeholder="Buscar Usuarios" class="search-input" />
+            <button (click)="openAddUserModal()" class="btn btn-primary add-user-btn" [disabled]="isLoading">
+                <span class="material-icons">add</span>
+                {{ isLoading ? 'Cargando...' : '' }}
+            </button>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Foto</th>
+                <th>Email</th>
+                <th>Último Login</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let user of users">
+                <td>{{ user.idUser }}</td>
+                <td>{{ user.userName }}</td>
+                <td>
+                    <div class="profile-image-container">
+                        <img *ngIf="user.picture" 
+                            [src]="'data:image/jpeg;base64,' + user.picture" 
+                            class="profile-img" alt="Foto usuario" />
+                    </div>
+                </td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.lastLogin | date:'medium' }}</td>
+                <td>{{ user.status === 'E' ? 'Activo' : 'Inactivo' }}</td>
+                <td>
+                    <button class="btn btn-info" [disabled]="isLoading">Editar</button>
+                    <button class="btn btn-danger" [disabled]="isLoading">Eliminar</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div *ngIf="showModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>Agregar Usuario</h2>
+        
+        <form #userForm="ngForm" (ngSubmit)="addUser()" class="user-form">
+            <div class="form-group">
+                <label>Nombre de Usuario: <span class="required">*</span></label>
+                <input type="text" [(ngModel)]="newUser.userName" name="userName" 
+                    placeholder="Ej: jperez" required #userName="ngModel" />
+                <div *ngIf="userName.invalid && (userName.dirty || userName.touched)" class="error-message">
+                    Nombre de usuario es requerido
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Contraseña: <span class="required">*</span></label>
+                <input type="password" [(ngModel)]="newUser.password" name="password" 
+                    placeholder="********" required #password="ngModel" />
+                <div *ngIf="password.invalid && (password.dirty || password.touched)" class="error-message">
+                    Contraseña es requerida
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>ID Empleado: <span class="required">*</span></label>
+                <input type="number" [(ngModel)]="newUser.idEmployee" name="idEmployee" 
+                    placeholder="Ej: 1" required #idEmployee="ngModel" />
+                <div *ngIf="idEmployee.invalid && (idEmployee.dirty || idEmployee.touched)" class="error-message">
+                    ID de empleado es requerido
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>ID Rol: <span class="required">*</span></label>
+                <input type="number" [(ngModel)]="newUser.idRole" name="idRole" 
+                    placeholder="Ej: 1" required #idRole="ngModel" />
+                <div *ngIf="idRole.invalid && (idRole.dirty || idRole.touched)" class="error-message">
+                    ID de rol es requerido
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Estado: <span class="required">*</span></label>
+                <select [(ngModel)]="newUser.status" name="status" required #status="ngModel">
+                    <option value="E">Activo</option>
+                    <option value="D">Inactivo</option>
+                </select>
+                <div *ngIf="status.invalid && (status.dirty || status.touched)" class="error-message">
+                    Estado es requerido
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Cambiar contraseña en primer login:</label>
+                <input type="checkbox" [(ngModel)]="newUser.isChangePass" name="isChangePass" />
+            </div>
+
+            <div class="form-group">
+                <label>Fotografía:</label>
+                <input type="file" (change)="handleImageUpload($event)" accept="image/*" [disabled]="isLoading" />
+                <div *ngIf="imagePreview" class="image-preview-container">
+                    <h4>Vista previa:</h4>
+                    <div class="preview-image-wrapper">
+                        <img [src]="imagePreview" class="preview-img" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" 
+                        class="btn-submit"
+                        [disabled]="userForm.invalid || isLoading">
+                    {{ isLoading ? 'Guardando...' : 'Guardar' }}
+                </button>
+                <button type="button" 
+                        class="btn-cancel"
+                        (click)="closeModal()"
+                        [disabled]="isLoading">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

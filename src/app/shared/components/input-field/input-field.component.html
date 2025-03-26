@@ -1,0 +1,8 @@
+<div class="flex flex-col" *ngIf="control">
+  <label class="block text-gray-700 text-sm font-bold mb-2">{{ label }}</label>
+  <input [type]="type" [placeholder]="placeholder" [formControl]="control"
+    class="appearance-none block w-full rounded py-3 px-6 focus:outline-none border border-teal-700/30 focus:border-teal-600" />
+  <div *ngIf="control.invalid && (control.dirty || control.touched)">
+    <small class="text-red-600" *ngIf="control.hasError('required')">Este campo es obligatorio</small>
+  </div>
+</div>

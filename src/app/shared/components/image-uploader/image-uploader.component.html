@@ -1,0 +1,9 @@
+<div class="w-full flex flex-col gap-2 mx-3">
+  <label class="block text-gray-700 text-sm font-bold mb-2">{{ label }}</label>
+  <input type="file" (change)="onFileChange($event)" accept="image/*" placeholder="Foto del usuario">
+  @if(imgPreview){
+  <img [src]="imgPreview" alt="Image preview" width="200px">
+  }@else{
+  <p>No hay imagen seleccionada</p>
+  }
+</div>
