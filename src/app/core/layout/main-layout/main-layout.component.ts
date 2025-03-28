@@ -84,12 +84,8 @@ export class MainLayoutComponent implements OnInit {
   }
 
   getProfileImage(): string {
-    if (this.profileData?.picture) {
-      return this.profileData.picture.startsWith('data:image') 
-        ? this.profileData.picture 
-        : `data:image/jpeg;base64,${this.profileData.picture}`;
-    }
-    return this.defaultAvatar;
+
+    return this.profileData.picture?this.profileData.picture: '';
   }
 
   getFullName(): string {

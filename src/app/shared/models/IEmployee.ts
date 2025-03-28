@@ -9,7 +9,7 @@ export interface IEmployeeImage {
 }
 
 export interface IEmployee {
-    idEmployee: number;  // Cambiado a requerido
+    idEmployee: number;
     firstName: string;
     middleName: string | null;
     fatherLastName: string;

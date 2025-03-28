@@ -67,11 +67,8 @@ export class ProfileComponent implements OnInit {
     ].filter(Boolean).join(' ') || 'Nombre no disponible';
   }
 
-  getProfileImage(): string | null {
-    if (!this.profile?.picture) return null;
-    return this.profile.picture.startsWith('data:image') 
-      ? this.profile.picture 
-      : `data:image/jpeg;base64,${this.profile.picture}`;
+  getProfileImage(){
+    return this.profile?.picture?this.profile?.picture: '';
   }
 
   getStatusText(status?: string): string {
