@@ -6,34 +6,69 @@
   width: 250px;
   background-color: #ff9800;
   color: white;
+  display: flex;
+  flex-direction: column;
 
   mat-icon {
     margin-right: 10px;
+    vertical-align: middle;
+    height: 24px;
+    width: 24px;
+    font-size: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .logo {
     text-align: center;
-    padding: 15px;
+    padding: 20px 15px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 64px;
+    box-sizing: border-box;
+
+    img {
+      max-height: 40px;
+      width: auto;
+    }
   }
 
-  mat-nav-list a {
-    color: white;
-    text-decoration: none;
+  mat-nav-list {
+    padding-top: 8px;
     display: flex;
-    align-items: center;
-    padding: 10px 16px;
-    border-radius: 4px;
+    flex-direction: column;
+    gap: 4px;
 
-    &:hover {
-      background-color: white;
-      color: #ff9800;
-    }
+    a {
+      color: white;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin: 0 8px;
+      transition: all 0.2s ease;
 
-    &.active {
-      background-color: white;
-      color: #ff9800;
-      font-weight: 500;
+      .menu-item-text {
+        display: inline-flex;
+        align-items: center;
+        height: 24px;
+        font-size: 14px;
+      }
+
+      &:hover {
+        background-color: white;
+        color: #ff9800;
+      }
+
+      &.active {
+        background-color: white;
+        color: #ff9800;
+        font-weight: 500;
+      }
     }
   }
 }
@@ -41,12 +76,17 @@
 .toolbar {
   background-color: white;
   color: #333;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 2;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
 
   .title {
     font-weight: 500;
     margin-left: 16px;
+    font-size: 18px;
   }
 
   .spacer {
@@ -57,6 +97,8 @@
     margin-right: 16px;
     cursor: pointer;
     color: #555;
+    display: flex;
+    align-items: center;
   }
 
   .profile-container {
@@ -111,17 +153,21 @@
 .page-content {
   background-color: #f9f9f9;
   min-height: calc(100vh - 64px);
+  padding: 24px;
 }
 
 .profile-menu {
   mat-icon {
     margin-right: 8px;
     color: #666;
+    vertical-align: middle;
   }
 
   button {
     display: flex;
     align-items: center;
+    padding: 8px 16px;
+    font-size: 14px;
   }
 }
 

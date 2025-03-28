@@ -8,6 +8,7 @@ import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { InputSearchComponent } from '../../../../shared/components/input-search/input-search.component';
 import { MenuService } from '../../../../core/services/menu.service';
 import { IMenu, IMenuResponse } from '../../../../shared/models/IMenu';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-menu',
@@ -46,7 +47,10 @@ export class MenuComponent implements OnInit {
     order: 0
   };
 
-  constructor(private menuService: MenuService) {}
+  constructor(private menuService: MenuService,  private location: Location) {}
+  goBack() {
+    this.location.back();
+}
 
   ngOnInit() {
     this.getMenus();

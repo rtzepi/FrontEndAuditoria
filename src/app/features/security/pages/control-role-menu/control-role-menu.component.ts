@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { BtnAcceptComponent } from '../../../../shared/components/btn-accept/btn-accept.component';
 import { BtnCloseComponent } from '../../../../shared/components/btn-close/btn-close.component';
 import Swal from 'sweetalert2';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-control-role-menu',
@@ -31,8 +32,12 @@ export class ControlRoleMenuComponent implements OnInit {
     status: 'E'
   };
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private location: Location) {}
 
+// Método para retroceder:
+goBack() {
+  this.location.back();
+}
   ngOnInit() {
     this.getRoleMenus();
   }

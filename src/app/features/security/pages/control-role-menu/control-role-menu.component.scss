@@ -201,3 +201,24 @@ th {
         }
     }
 }
+.btn-back {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: transparent;
+    color: #3b82f6;
+    border: none;
+    padding: 8px 0;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    font-size: 14px;
+    transition: color 0.3s ease;
+
+    &:hover {
+        color: #2563eb;
+    }
+
+    .material-icons {
+        font-size: 20px;
+    }
+}

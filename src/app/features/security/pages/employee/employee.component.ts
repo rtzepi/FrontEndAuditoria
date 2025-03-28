@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import { EmployeeService } from '../../../../core/services/employee.service';
 import { IEmployee, IEmployeeSingleResponse, IEmployeeArrayResponse } from '../../../../shared/models/IEmployee';
 import { InputSearchComponent } from '../../../../shared/components/input-search/input-search.component';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-employee',
@@ -48,8 +49,10 @@ export class EmployeeComponent implements OnInit {
     idPicture: null
   };
 
-  constructor(private employeeService: EmployeeService) {}
-
+  constructor(private employeeService: EmployeeService, private location: Location) {}
+  goBack() {
+    this.location.back();
+}
   ngOnInit() {
     this.loadEmployees();
     this.setupSearch();
