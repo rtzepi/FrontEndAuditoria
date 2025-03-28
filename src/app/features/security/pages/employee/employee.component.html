@@ -36,10 +36,10 @@
                 <td>{{ employee.idEmployee }}</td>
                 <td>
                     <div class="profile-image-container">
-                        <img *ngIf="employee.imgBase64" 
-                            [src]="'data:image/jpeg;base64,' + employee.imgBase64" 
+                        <img *ngIf="employee.picture" 
+                            [src]="employee.picture"
                             class="profile-img" alt="Foto empleado">
-                        <div *ngIf="!employee.imgBase64" class="initials">
+                        <div *ngIf="!employee.picture" class="initials">
                             {{ getInitials(employee) }}
                         </div>
                     </div>

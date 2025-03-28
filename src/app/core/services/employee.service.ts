@@ -45,9 +45,16 @@ export class EmployeeService {
     return this.http.put<IEmployeeSingleResponse>(`${this.apiUrl}/${id}`, body, { headers });
   }
 
-  deleteEmployee(id: number): Observable<IEmployeeSingleResponse> {
-    return this.http.delete<IEmployeeSingleResponse>(`${this.apiUrl}`, {
-      body: { idEmployee: id }
-    });
+  // deleteEmployee(id: number): Observable<IEmployeeSingleResponse> {
+  //   return this.http.delete<IEmployeeSingleResponse>(`${this.apiUrl}`, {
+  //     body: { idEmployee: id }
+  //   });
+
+
+    deleteEmployee(id: number): Observable<IEmployeeSingleResponse> {
+      return this.http.delete<IEmployeeSingleResponse>(`${this.apiUrl}`, {
+        params: { id: id.toString() }
+      });
+    }
+    
   }
-}

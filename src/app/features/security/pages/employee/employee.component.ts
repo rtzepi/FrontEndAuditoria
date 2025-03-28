@@ -29,14 +29,13 @@ export class EmployeeComponent implements OnInit {
   isEditing = false;
   currentEmployeeId: number | null = null;
 
-  // Pagination
   currentPage = 1;
   itemsPerPage = 10;
   searchTerm = '';
   searchSubject = new Subject<string>();
 
   newEmployee: IEmployee = {
-    idEmployee: 0, // Inicializado con valor por defecto
+    idEmployee: 0,
     firstName: '',
     middleName: null,
     fatherLastName: '',
@@ -46,7 +45,8 @@ export class EmployeeComponent implements OnInit {
     status: 'E',
     isAuthorization: true,
     imgBase64: null,
-    idPicture: null
+    idPicture: null,
+    picture: ''
   };
 
   constructor(private employeeService: EmployeeService, private location: Location) {}
@@ -64,6 +64,7 @@ export class EmployeeComponent implements OnInit {
       next: (response) => {
         if (response.isSuccess && response.value) {
           this.employees = response.value;
+          console.log(this.employees)
           this.filteredEmployees = [...this.employees];
         }
         this.isLoading = false;
@@ -140,7 +141,8 @@ export class EmployeeComponent implements OnInit {
     this.currentEmployeeId = employee.idEmployee;
     
     this.newEmployee = { ...employee };
-    this.imagePreview = employee.imgBase64 ? `data:image/jpeg;base64,${employee.imgBase64}` : null;
+    this.newEmployee.imgBase64 = employee.picture;
+    this.imagePreview = employee.imgBase64 ? `${employee.imgBase64}` : null;
     this.showModal = true;
   }
 
@@ -260,7 +262,7 @@ export class EmployeeComponent implements OnInit {
   resetForm() {
     this.imagePreview = null;
     this.newEmployee = {
-      idEmployee: 0, // Asegurando que siempre tenga un valor
+      idEmployee: 0,
       firstName: '',
       middleName: null,
       fatherLastName: '',
@@ -270,7 +272,8 @@ export class EmployeeComponent implements OnInit {
       status: 'E',
       isAuthorization: true,
       imgBase64: null,
-      idPicture: null
+      idPicture: null,
+      picture: ''
     };
     this.isEditing = false;
     this.currentEmployeeId = null;

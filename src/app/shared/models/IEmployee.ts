@@ -25,6 +25,7 @@ export interface IEmployee {
     updated_at?: string;
     created_by?: number;
     deleted_at?: string | null;
+    picture: string;
 }
 
 export interface IEmployeeSingleResponse {
