@@ -1,28 +1,32 @@
-import { Injectable } from '@angular/core';
+// src/app/core/services/local-storage.service.ts
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
-providedIn: 'root',
+  providedIn: 'root',
 })
 export class LocalStorageService {
-constructor() {}
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
-  // Método para guardar un valor en el localStorage
-set(key: string, value: string): void {
-    localStorage.setItem(key, value);
-}
+  set(key: string, value: string): void {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(key, value);
+    }
+  }
 
-  // Método para obtener un valor del localStorage
-get(key: string): string | null {
-    return localStorage.getItem(key);
-}
+  get(key: string): string | null {
+    return isPlatformBrowser(this.platformId) ? localStorage.getItem(key) : null;
+  }
 
-  // Método para eliminar un valor del localStorage
-remove(key: string): void {
-    localStorage.removeItem(key);
-}
+  remove(key: string): void {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem(key);
+    }
+  }
 
-  // Método para limpiar todo el localStorage
-clear(): void {
-    localStorage.clear();
-}
+  clear(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.clear();
+    }
+  }
 }

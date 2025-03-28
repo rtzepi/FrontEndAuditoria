@@ -58,6 +58,9 @@ export class MenuUserComponent implements OnInit {
               case 'Control role menu':
                 menu.icon = 'settings';
                 break;
+              case 'Perfil':
+                menu.icon = 'account_circle';
+                break;
               default:
                 menu.icon = 'settings'; 
             }

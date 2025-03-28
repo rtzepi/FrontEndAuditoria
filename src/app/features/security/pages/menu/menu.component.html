@@ -1,4 +1,276 @@
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=add" />
+<div class="container">
+    <div class="header">
+        <h2>Menús</h2>
+        <div class="header-actions">
+            <app-input-search
+                placeholder="Buscar menu..."
+                (searchChange)="handleSearch($event)">
+            </app-input-search>
+            <button (click)="openAddMenuModal()" class="btn btn-primary add-menu-btn" [disabled]="isLoading">
+                <span class="material-icons">add</span>
+            </button>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Orden</th>
+                <th>Nombre</th>
+                <th>Ícono</th>
+                <th>Menú Padre</th>
+                <th>Ruta</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let menu of paginatedMenus">
+                <td>{{menu.order}}</td>
+                <td>{{ menu.nameMenu }}</td>
+                <td>
+                    <span class="material-icons">{{ menu.icon }}</span>
+                </td>
+                <td>{{ getMenuFatherName(menu.idMenuFather) || 'Ninguno' }}</td>
+                <td>{{ menu.route }}</td>
+                <td>{{ menu.status === 'E' ? 'Activo' : 'Inactivo' }}</td>
+                <td class="btn-actions">
+                    <button class="btn btn-info" (click)="openEditMenuModal(menu)" [disabled]="isLoading">Editar</button>
+                    <button class="btn btn-danger" (click)="confirmDelete(menu)" [disabled]="isLoading">Eliminar</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="pagination-controls" *ngIf="menus.length > itemsPerPage">
+        <button (click)="previousPage()" [disabled]="currentPage === 1" class="btn-pagination">
+            Anterior
+        </button>
+        <span>Página {{currentPage}} de {{totalPages}}</span>
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages" class="btn-pagination">
+            Siguiente
+        </button>
+    </div>
+</div>
+
+<div *ngIf="showModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>{{ isEditing ? 'Editar Menú' : 'Agregar Menú' }}</h2>
+        
+        <form #menuForm="ngForm" (ngSubmit)="isEditing ? updateMenu() : addMenu()" class="menu-form">
+            <div class="form-group">
+                <label>Nombre del Menú: <span class="required">*</span></label>
+                <input type="text" [(ngModel)]="newMenu.nameMenu" name="nameMenu" 
+                    placeholder="Ej: Home" required #nameMenu="ngModel" />
+                <div *ngIf="nameMenu.invalid && (nameMenu.dirty || nameMenu.touched)" class="error-message">
+                    Nombre del menú es requerido
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Ícono: <span class="required">*</span></label>
+                <input type="text" [(ngModel)]="newMenu.icon" name="icon" 
+                    placeholder="Ej: home" required #icon="ngModel" />
+                <div *ngIf="icon.invalid && (icon.dirty || icon.touched)" class="error-message">
+                    Ícono es requerido
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Menú Padre:</label>
+                <select [(ngModel)]="newMenu.idMenuFather" name="idMenuFather">
+                    <option [ngValue]="null">Ninguno (Menú principal)</option>
+                    <option *ngFor="let menu of parentMenus" [ngValue]="menu.idMenu">
+                        {{ menu.nameMenu }}
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Ruta: <span class="required">*</span></label>
+                <input type="text" [(ngModel)]="newMenu.route" name="route" 
+                    placeholder="Ej: /home" required #route="ngModel" />
+                <div *ngIf="route.invalid && (route.dirty || route.touched)" class="error-message">
+                    Ruta es requerida
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Orden: <span class="required">*</span></label>
+                <input type="number" [(ngModel)]="newMenu.order" name="order" 
+                    min="1" required #order="ngModel" />
+                <div *ngIf="order.invalid && (order.dirty || order.touched)" class="error-message">
+                    Orden es requerido y debe ser mayor a 0
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Estado: <span class="required">*</span></label>
+                <select [(ngModel)]="newMenu.status" name="status" required #status="ngModel">
+                    <option value="E">Activo</option>
+                    <option value="D">Inactivo</option>
+                </select>
+                <div *ngIf="status.invalid && (status.dirty || status.touched)" class="error-message">
+                    Estado es requerido
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" 
+                        class="btn-submit"
+                        [disabled]="menuForm.invalid || isLoading">
+                    {{ isLoading ? (isEditing ? 'Actualizando...' : 'Guardando...') : (isEditing ? 'Actualizar' : 'Guardar') }}
+                </button>
+                <button type="button" 
+                        class="btn-cancel"
+                        (click)="closeModal()"
+                        [disabled]="isLoading">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+<!-- <div class="container">
+    <div class="header">
+        <h2>Menús</h2>
+        <div class="header-actions">
+            <app-input-search
+                placeholder="Buscar menu..."
+                (searchChange)="handleSearch($event)">
+            </app-input-search>
+            <button (click)="openAddMenuModal()" class="btn btn-primary add-menu-btn" [disabled]="isLoading">
+                <span class="material-icons">add</span>
+            </button>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Orden</th>
+                <th>Nombre</th>
+                <th>Ícono</th>
+                <th>Menú Padre</th>
+                <th>Ruta</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody cdkDropList (cdkDropListDropped)="drop($event)">
+            <tr *ngFor="let menu of paginatedMenus" cdkDrag>
+                <td class="order-cell">
+                    <span class="drag-handle">↕️</span>
+                    {{menu.order}}
+                </td>
+                <td>{{ menu.nameMenu }}</td>
+                <td>
+                    <span class="material-icons">{{ menu.icon }}</span>
+                </td>
+                <td>{{ getMenuFatherName(menu.idMenuFather) || 'Ninguno' }}</td>
+                <td>{{ menu.route }}</td>
+                <td>{{ menu.status === 'E' ? 'Activo' : 'Inactivo' }}</td>
+                <td class="btn-actions">
+                    <button class="btn btn-info" (click)="openEditMenuModal(menu)" [disabled]="isLoading">Editar</button>
+                    <button class="btn btn-danger" (click)="confirmDelete(menu)" [disabled]="isLoading">Eliminar</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="pagination-controls" *ngIf="menus.length > itemsPerPage">
+        <button (click)="previousPage()" [disabled]="currentPage === 1" class="btn-pagination">
+            Anterior
+        </button>
+        <span>Página {{currentPage}} de {{totalPages}}</span>
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages" class="btn-pagination">
+            Siguiente
+        </button>
+    </div>
+</div>
+
+<div *ngIf="showModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>{{ isEditing ? 'Editar Menú' : 'Agregar Menú' }}</h2>
+        
+        <form #menuForm="ngForm" (ngSubmit)="isEditing ? updateMenu() : addMenu()" class="menu-form">
+            <div class="form-group">
+                <label>Nombre del Menú: <span class="required">*</span></label>
+                <input type="text" [(ngModel)]="newMenu.nameMenu" name="nameMenu" 
+                    placeholder="Ej: Home" required #nameMenu="ngModel" />
+                <div *ngIf="nameMenu.invalid && (nameMenu.dirty || nameMenu.touched)" class="error-message">
+                    Nombre del menú es requerido
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Ícono: <span class="required">*</span></label>
+                <input type="text" [(ngModel)]="newMenu.icon" name="icon" 
+                    placeholder="Ej: home" required #icon="ngModel" />
+                <div *ngIf="icon.invalid && (icon.dirty || icon.touched)" class="error-message">
+                    Ícono es requerido
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Menú Padre:</label>
+                <select [(ngModel)]="newMenu.idMenuFather" name="idMenuFather">
+                    <option [ngValue]="null">Ninguno (Menú principal)</option>
+                    <option *ngFor="let menu of parentMenus" [ngValue]="menu.idMenu">
+                        {{ menu.nameMenu }}
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Ruta: <span class="required">*</span></label>
+                <input type="text" [(ngModel)]="newMenu.route" name="route" 
+                    placeholder="Ej: /home" required #route="ngModel" />
+                <div *ngIf="route.invalid && (route.dirty || route.touched)" class="error-message">
+                    Ruta es requerida
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Estado: <span class="required">*</span></label>
+                <select [(ngModel)]="newMenu.status" name="status" required #status="ngModel">
+                    <option value="E">Activo</option>
+                    <option value="D">Inactivo</option>
+                </select>
+                <div *ngIf="status.invalid && (status.dirty || status.touched)" class="error-message">
+                    Estado es requerido
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" 
+                        class="btn-submit"
+                        [disabled]="menuForm.invalid || isLoading">
+                    {{ isLoading ? (isEditing ? 'Actualizando...' : 'Guardando...') : (isEditing ? 'Actualizar' : 'Guardar') }}
+                </button>
+                <button type="button" 
+                        class="btn-cancel"
+                        (click)="closeModal()"
+                        [disabled]="isLoading">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div> -->
+
+
+
+
+<!-- <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=add" />
 
 <div class="container">
     <div class="header">
@@ -119,4 +391,4 @@
             </div>
         </form>
     </div>
-</div>
+</div> -->

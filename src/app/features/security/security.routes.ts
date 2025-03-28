@@ -8,6 +8,7 @@ import {RoleComponent} from './pages/role/role.component'
 import {MenuComponent} from './pages//menu/menu.component'
 import {EmployeeComponent} from './pages/employee/employee.component'
 import {ControlRoleMenuComponent} from './pages/control-role-menu/control-role-menu.component'
+import {ProfileComponent} from './pages/profile/profile.component'
 
 
 export const SECURITY_ROUTES: Routes = [
@@ -34,6 +35,10 @@ export const SECURITY_ROUTES: Routes = [
 {
     path: 'roleMenu',
     component: ControlRoleMenuComponent,
+},
+{
+    path: 'profile',
+    component: ProfileComponent,
 }
 
 ]

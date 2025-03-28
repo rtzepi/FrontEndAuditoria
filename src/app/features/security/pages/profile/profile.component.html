@@ -1,0 +1,82 @@
+<ng-container *ngIf="!loading; else loadingTemplate">
+  <div *ngIf="!error; else errorTemplate" class="profile-container">
+    <mat-card class="profile-card">
+    <mat-card-header>
+        <div class="profile-header">
+        <div class="avatar-container">
+            <img 
+              *ngIf="getProfileImage()" 
+            [src]="getProfileImage()" 
+            alt="Foto de perfil" 
+            class="profile-avatar"
+            onerror="this.src='assets/default-profile.png'"
+            >
+            <div *ngIf="!getProfileImage()" class="avatar-placeholder">
+            <mat-icon>person</mat-icon>
+            </div>
+        </div>
+        <div class="profile-titles">
+            <mat-card-title>{{ getFullName() }}</mat-card-title>
+            <mat-card-subtitle>{{ profile?.roleName || 'Rol no asignado' }}</mat-card-subtitle>
+        </div>
+        </div>
+    </mat-card-header>
+
+    <mat-divider></mat-divider>
+
+    <mat-card-content>
+        <mat-list>
+        <mat-list-item>
+            <mat-icon matListItemIcon>email</mat-icon>
+            <div matListItemTitle>Email</div>
+            <div matListItemLine>{{ profile?.email || 'No especificado' }}</div>
+        </mat-list-item>
+
+        <mat-list-item>
+            <mat-icon matListItemIcon>phone</mat-icon>
+            <div matListItemTitle>Teléfono</div>
+            <div matListItemLine>{{ profile?.phoneNumber || 'No especificado' }}</div>
+        </mat-list-item>
+
+        <mat-list-item>
+            <mat-icon matListItemIcon>badge</mat-icon>
+            <div matListItemTitle>ID Empleado</div>
+            <div matListItemLine>{{ profile?.idEmployee || 'No especificado' }}</div>
+        </mat-list-item>
+
+        <mat-list-item>
+            <mat-icon matListItemIcon>verified</mat-icon>
+            <div matListItemTitle>Estado</div>
+            <div matListItemLine>{{ getStatusText(profile?.status) }}</div>
+        </mat-list-item>
+        </mat-list>
+    </mat-card-content>
+
+    <mat-divider></mat-divider>
+
+    <mat-card-actions align="end">
+        <button mat-button color="primary">
+        <mat-icon>edit</mat-icon> Editar
+        </button>
+    </mat-card-actions>
+    </mat-card>
+</div>
+</ng-container>
+
+<ng-template #loadingTemplate>
+<div class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Cargando perfil...</p>
+</div>
+</ng-template>
+
+<ng-template #errorTemplate>
+<div class="error-container">
+    <mat-icon color="warn">error</mat-icon>
+    <h3>Error al cargar el perfil</h3>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="loadProfile()">
+    <mat-icon>refresh</mat-icon> Reintentar
+    </button>
+</div>
+</ng-template>
