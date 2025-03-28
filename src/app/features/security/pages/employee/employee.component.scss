@@ -213,7 +213,6 @@ td span.material-icons {
     color: #555;
 }
 
-/* Estilos del Modal con más espacio HORIZONTAL */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -229,10 +228,10 @@ td span.material-icons {
 
 .modal-content {
     background-color: white;
-    padding: 2rem 3rem; /* Más padding horizontal */
+    padding: 2rem 3rem; 
     border-radius: 8px;
     width: 90%;
-    max-width: 700px; /* Ancho máximo aumentado */
+    max-width: 700px; 
     max-height: 90vh;
     overflow-y: auto;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -246,14 +245,14 @@ td span.material-icons {
 
 .form-row {
     display: flex;
-    gap: 2rem; /* Espacio horizontal aumentado entre inputs */
+    gap: 2rem;
     width: 100%;
     margin-bottom: 1.5rem;
 }
 
 .form-group {
     flex: 1;
-    min-width: 0; /* Evita problemas de desbordamiento */
+    min-width: 0; 
 
     label {
         display: block;
@@ -277,7 +276,6 @@ td span.material-icons {
     }
 }
 
-/* Sección de foto con más espacio */
 .photo-upload {
     margin-top: 2rem;
 
@@ -289,13 +287,13 @@ td span.material-icons {
 
 .upload-container {
     display: flex;
-    gap: 2rem; /* Más espacio entre la imagen y los controles */
+    gap: 2rem; 
     align-items: center;
 }
 
 .image-preview {
     position: relative;
-    width: 100px; /* Tamaño aumentado */
+    width: 100px;
     height: 100px;
     border-radius: 50%;
     overflow: hidden;
@@ -328,12 +326,12 @@ td span.material-icons {
 .btn-upload {
     background-color: #f8f9fa;
     border: 1px dashed #ddd;
-    padding: 0.75rem 1.5rem; /* Padding aumentado */
+    padding: 0.75rem 1.5rem;
     border-radius: 4px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 8px; /* Más espacio entre icono y texto */
+    gap: 8px;
     transition: all 0.3s;
     font-size: 14px;
 
@@ -353,14 +351,14 @@ td span.material-icons {
 .modal-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 1.5rem; /* Más espacio entre botones */
+    gap: 1.5rem;
     margin-top: 2rem;
     width: 100%;
 
     .btn-submit {
         background-color: #6c5ce7;
         color: white;
-        padding: 0.75rem 2rem; /* Padding horizontal aumentado */
+        padding: 0.75rem 2rem;
         border-radius: 4px;
         font-weight: 500;
         cursor: pointer;
@@ -407,7 +405,7 @@ td span.material-icons {
     border-color: #dc3545 !important;
 }
 
-/* Media Queries ajustadas */
+
 @media (max-width: 768px) {
     .header {
         flex-direction: column;
