@@ -34,7 +34,6 @@ export class ControlRoleMenuComponent implements OnInit {
 
   constructor(private http: HttpClient, private location: Location) {}
 
-// Método para retroceder:
 goBack() {
   this.location.back();
 }

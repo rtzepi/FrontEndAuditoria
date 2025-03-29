@@ -36,10 +36,6 @@ setToken(token: string | null) {
 
 
 
-
-
-
-
 decodeToken() {
     if (this.jwtToken) {
     this.decodedToken = jwtDecode(this.jwtToken);
