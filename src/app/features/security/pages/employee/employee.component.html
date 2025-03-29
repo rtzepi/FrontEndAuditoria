@@ -152,9 +152,9 @@
                     </div>
                 </div>
                 
-                <div class="form-group">
+                <div class="form-group" *ngIf="isEditing">
                     <label>Autorizado <span class="required">*</span></label>
-                    <select [(ngModel)]="newEmployee.isAuthorization" name="isAuthorization" required #isAuthorization="ngModel">
+                    <select [(ngModel)]="newEmployee.isAuthorization" name="isAuthorization" #isAuthorization="ngModel" [disabled]="true">
                         <option [value]="true">Sí</option>
                         <option [value]="false">No</option>
                     </select>
