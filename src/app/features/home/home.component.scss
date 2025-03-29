@@ -5,7 +5,6 @@ $text-color: #111;
 
 .contenedor {
   height: 100%;
- background-color: green;
   font-family: 'Arial', sans-serif;
   display: flex;
   flex-direction: column;
@@ -18,21 +17,28 @@ $text-color: #111;
 }
 
 h1 {
-  font-size: 2.5rem;
-  font-weight: bold;
-  margin-bottom: 20px;
+  font-size: clamp(2.8rem, 6vw, 4rem);
+  font-weight: 600;
+  margin-bottom: 1.5rem;
   color: $primary-color;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  font-family: 'Exo 2', 'Helvetica Neue', sans-serif;
+  position: relative;
 }
 
 h2 {
-  font-size: 2rem;
-  font-weight: normal;
-  margin-bottom: 15px;
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 600;
+  margin-bottom: 1.5rem;
   color: $secondary-color;
+  line-height: 1.2;
+  letter-spacing: -0.05em;
+  font-family: 'Inter', 'Helvetica Neue', sans-serif;
+  transition: color 0.3s ease;
 }
 
 .slider {
-  background-color: red;
   width: 100%;
   margin: auto;
   overflow: hidden;

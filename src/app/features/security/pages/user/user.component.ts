@@ -59,7 +59,8 @@ export class UserComponent implements OnInit {
   isEditing = false;
   currentUserId: number | null = null;
 
-  employees: IEmployee[] = [];
+  allEmployees: IEmployee[] = [];
+  employeesWithoutUser: IEmployee[] = [];
   roles: IRole[] = [];
   employeeMap: { [key: number]: IEmployee } = {};
   roleMap: { [key: number]: IRole } = {};
@@ -90,17 +91,15 @@ export class UserComponent implements OnInit {
   private loadData() {
     this.isLoading = true;
     
-    // Cargar empleados
     this.userService.getEmployees().subscribe({
       next: (empResponse: any) => {
         if (empResponse.isSuccess && empResponse.value) {
-          this.employees = Array.isArray(empResponse.value) ? empResponse.value : [empResponse.value];
-          this.employeeMap = this.employees.reduce((map, emp) => {
+          this.allEmployees = Array.isArray(empResponse.value) ? empResponse.value : [empResponse.value];
+          this.employeeMap = this.allEmployees.reduce((map, emp) => {
             map[emp.idEmployee] = emp;
             return map;
           }, {} as { [key: number]: IEmployee });
 
-          // Cargar roles
           this.userService.getRoles().subscribe({
             next: (roleResponse: any) => {
               if (roleResponse.isSuccess && roleResponse.value) {
@@ -110,12 +109,13 @@ export class UserComponent implements OnInit {
                   return map;
                 }, {} as { [key: number]: IRole });
 
-                // Cargar usuarios
                 this.userService.getUsers().subscribe({
                   next: (userResponse: IUserResponse) => {
                     if (userResponse.isSuccess && userResponse.value) {
                       this.users = Array.isArray(userResponse.value) ? userResponse.value : [userResponse.value];
                       this.filteredUsers = [...this.users];
+                      
+                      this.filterEmployeesWithoutUser();
                     }
                     this.isLoading = false;
                   },
@@ -133,6 +133,14 @@ export class UserComponent implements OnInit {
       },
       error: (error) => this.handleError('Error al cargar empleados', error)
     });
+  }
+
+  private filterEmployeesWithoutUser() {
+    const employeeIdsWithUser = this.users.map(user => user.idEmployee);
+    
+    this.employeesWithoutUser = this.allEmployees.filter(
+      employee => !employeeIdsWithUser.includes(employee.idEmployee)
+    );
   }
 
   private setupSearch() {
@@ -234,6 +242,9 @@ export class UserComponent implements OnInit {
           const newUser = Array.isArray(response.value) ? response.value[0] : response.value;
           this.users.push(newUser);
           this.filteredUsers = [...this.users];
+          
+          this.filterEmployeesWithoutUser();
+          
           Swal.fire('Éxito', 'Usuario creado correctamente', 'success');
           this.closeModal();
         } else {
@@ -293,6 +304,9 @@ export class UserComponent implements OnInit {
         if (response.isSuccess) {
           this.users = this.users.filter(u => u.idUser !== id);
           this.filteredUsers = this.filteredUsers.filter(u => u.idUser !== id);
+          
+          this.filterEmployeesWithoutUser();
+          
           Swal.fire('Éxito', 'Usuario eliminado correctamente', 'success');
         } else {
           Swal.fire('Error', response.error || 'Error al eliminar usuario', 'error');
