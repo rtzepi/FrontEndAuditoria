@@ -85,7 +85,7 @@
     <div class="modal-content">
         <h2>{{ isEditing ? 'Editar Empleado' : 'Agregar Empleado' }}</h2>
         
-        <form #employeeForm="ngForm" (ngSubmit)="isEditing ? updateEmployee() : addEmployee()" class="employee-form">
+        <form #employeeForm="ngForm" (ngSubmit)="onSubmit()" class="employee-form">
             <div class="form-row">
                 <div class="form-group">
                     <label>Primer Nombre <span class="required">*</span></label>
@@ -111,7 +111,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label>Segundo Apellido</label>
+                    <label>Segundo Apellido <span class="required">*</span></label>
                     <input type="text" [(ngModel)]="newEmployee.motherLastName" name="motherLastName" required #motherLastName="ngModel">
                     <div *ngIf="motherLastName.invalid && (motherLastName.dirty || motherLastName.touched)" class="error-message">
                         Segundo apellido es requerido
@@ -132,10 +132,11 @@
                 <div class="form-group">
                     <label>Teléfono <span class="required">*</span></label>
                     <input type="text" [(ngModel)]="newEmployee.phoneNumber" name="phoneNumber" 
-                        required pattern="[0-9]{8,15}" #phoneNumber="ngModel">
+                        required pattern="[0-9]{8}" maxlength="8" #phoneNumber="ngModel"
+                        (keypress)="validateNumber($event)">
                     <div *ngIf="phoneNumber.invalid && (phoneNumber.dirty || phoneNumber.touched)" class="error-message">
                         <span *ngIf="phoneNumber.errors?.['required']">Teléfono es requerido</span>
-                        <span *ngIf="phoneNumber.errors?.['pattern']">8-15 dígitos numéricos</span>
+                        <span *ngIf="phoneNumber.errors?.['pattern']">Debe tener exactamente 8 dígitos</span>
                     </div>
                 </div>
             </div>
@@ -165,7 +166,7 @@
             </div>
 
             <div class="form-group photo-upload">
-                <label>Fotografía</label>
+                <label>Fotografía <span class="required">*</span></label>
                 <div class="upload-container">
                     <div class="image-preview" *ngIf="imagePreview">
                         <img [src]="imagePreview" alt="Vista previa">
@@ -181,6 +182,9 @@
                             {{ imagePreview ? 'Cambiar foto' : 'Subir foto' }}
                         </label>
                         <small>Tamaño máximo: 2MB (JPEG, PNG, JPG)</small>
+                        <div *ngIf="(formSubmitted || photoTouched) && !newEmployee.imgBase64" class="error-message">
+                            La imagen de perfil es obligatoria
+                        </div>
                     </div>
                 </div>
             </div>
@@ -188,7 +192,7 @@
             <div class="modal-actions">
                 <button type="submit" 
                         class="btn-submit"
-                        [disabled]="employeeForm.invalid || isLoading">
+                        [disabled]="employeeForm.invalid || isLoading || !newEmployee.imgBase64">
                     {{ isLoading ? (isEditing ? 'Actualizando...' : 'Guardando...') : (isEditing ? 'Actualizar' : 'Guardar') }}
                 </button>
                 <button type="button" 
@@ -201,5 +205,3 @@
         </form>
     </div>
 </div>
-
-
