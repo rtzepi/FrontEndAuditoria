@@ -49,8 +49,8 @@ export class ConfigurationMenuComponent {
                 case 'Proveedores':
                   menu.icon = 'handshake';
                   break;
-                case 'Compras':
-                  menu.icon ='shopping_bag';
+                case 'Productos':
+                  menu.icon ='local_shipping';
                   break;
               }
               return menu;

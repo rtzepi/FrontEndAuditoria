@@ -7,7 +7,7 @@ import {CompanyConfComponent} from './pages/company-conf/company-conf.component'
 import {ProductCategoryConfComponent} from './pages/product-category-conf/product-category-conf.component'
 import {SalesUnitConfComponent} from './pages/sales-unit-conf/sales-unit-conf.component'
 import {SupplierConfComponent} from './pages/supplier-conf/supplier-conf.component'
-import {PurchasingConfComponent} from './pages/purchasing-conf/purchasing-conf.component'
+import {ProductConfComponent} from './pages/product-conf/product-conf.component'
 
 export const CONF_ROUTES: Routes = [
     {
@@ -31,8 +31,8 @@ export const CONF_ROUTES: Routes = [
         component: SupplierConfComponent,
     },
     {
-        path: 'purchasingconf',
-        component: PurchasingConfComponent,
+        path: 'productconf',
+        component: ProductConfComponent,
     }
 
 ];

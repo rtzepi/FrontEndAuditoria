@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PurchasingConfComponent } from './purchasing-conf.component';
+import { PurchaseHistoryComponent } from './purchase-history.component';
 
-describe('PurchasingConfComponent', () => {
-  let component: PurchasingConfComponent;
-  let fixture: ComponentFixture<PurchasingConfComponent>;
+describe('PurchaseHistoryComponent', () => {
+  let component: PurchaseHistoryComponent;
+  let fixture: ComponentFixture<PurchaseHistoryComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PurchasingConfComponent]
+      imports: [PurchaseHistoryComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(PurchasingConfComponent);
+    fixture = TestBed.createComponent(PurchaseHistoryComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
