@@ -1,1 +1,247 @@
-<p>product-conf works!</p>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+<div class="container">
+    <button class="btn-back" (click)="goBack()">
+        <span class="material-icons">arrow_back</span>
+        Volver
+    </button>
+    
+    <div class="header">
+        <h2>Productos</h2>
+        <div class="header-actions">
+            <app-input-search 
+                [placeholder]="'Buscar productos...'" 
+                (searchChange)="handleSearch($event)">
+            </app-input-search>
+            <button (click)="openAddProductModal()" class="btn btn-primary add-product-btn" [disabled]="isLoading">
+                <span class="material-icons">add</span>
+            </button>
+        </div>
+    </div>
+
+    <div *ngIf="isLoading && products.length === 0" class="loading-spinner">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <div *ngIf="!isLoading && filteredProducts.length === 0" class="no-results">
+        No se encontraron productos
+    </div>
+
+    <table *ngIf="filteredProducts.length > 0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Imagen</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Categoría</th>
+                <th>Proveedor</th>
+                <th>Unidad</th>
+                <th>Caduca</th>
+                <th>Fecha Caducidad</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let product of paginatedProducts">
+                <td>{{ product.idProduct }}</td>
+                <td>
+                    <div class="product-image-container">
+                        <img *ngIf="product.imgBase64" 
+                            [src]="'data:image/jpeg;base64,' + product.imgBase64"
+                            class="product-img" alt="Imagen producto">
+                        <div *ngIf="!product.imgBase64" class="no-image">
+                            <span class="material-icons">image</span>
+                        </div>
+                    </div>
+                </td>
+                <td>{{ product.nameProduct }}</td>
+                <td>{{ product.description }}</td>
+                <td>{{ getCategoryName(product.idCategory) }}</td>
+                <td>{{ getSupplierName(product.idSupplier) }}</td>
+                <td>{{ getUnitName(product.idUnitOfSale) }}</td>
+                <td>{{ product.isExpire ? 'Sí' : 'No' }}</td>
+                <td>{{ product.isExpire ? (product.dateExpire | date:'shortDate') : 'N/A' }}</td>
+                <td>
+                    <span [class.active]="product.status === 'A'" [class.inactive]="product.status !== 'A'">
+                        {{ getStatusText(product.status) }}
+                    </span>
+                </td>
+                <td class="btn-actions">
+                    <button class="btn btn-info" (click)="openEditProductModal(product)" [disabled]="isLoading">
+                        Editar
+                    </button>
+                    <button class="btn btn-danger" (click)="confirmDelete(product)" [disabled]="isLoading">
+                        Eliminar
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="pagination-controls" *ngIf="filteredProducts.length > itemsPerPage">
+        <button (click)="previousPage()" [disabled]="currentPage === 1" class="btn-pagination">
+            Anterior
+        </button>
+        <span>Página {{currentPage}} de {{totalPages}}</span>
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages" class="btn-pagination">
+            Siguiente
+        </button>
+    </div>
+</div>
+
+<div *ngIf="showModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>{{ isEditing ? 'Editar Producto' : 'Agregar Producto' }}</h2>
+        
+        <form #productForm="ngForm" (ngSubmit)="isEditing ? updateProduct() : addProduct()" class="product-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nombre: <span class="required">*</span></label>
+                    <input type="text" 
+                        [(ngModel)]="newProduct.nameProduct" 
+                        name="nameProduct" 
+                        required 
+                        #nameProduct="ngModel"
+                        maxlength="{{MAX_NAME_LENGTH}}"
+                        (input)="handleInput('nameProduct', MAX_NAME_LENGTH, $event)">
+                    <div class="char-counter" 
+                        [class.warning]="getRemainingChars('nameProduct', MAX_NAME_LENGTH) < 10"
+                        [class.danger]="getRemainingChars('nameProduct', MAX_NAME_LENGTH) === 0">
+                        Caracteres restantes: {{ getRemainingChars('nameProduct', MAX_NAME_LENGTH) }}
+                    </div>
+                    <div *ngIf="(nameProduct.invalid && (nameProduct.dirty || nameProduct.touched)) || formSubmitted" class="error-message">
+                        <span *ngIf="nameProduct.errors?.['required']">Nombre es requerido</span>
+                        <span *ngIf="nameProduct.value?.length === MAX_NAME_LENGTH">Máximo {{MAX_NAME_LENGTH}} caracteres</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Descripción:</label>
+                    <textarea [(ngModel)]="newProduct.description" 
+                        name="description" 
+                        rows="3"
+                        maxlength="{{MAX_DESCRIPTION_LENGTH}}"
+                        (input)="handleInput('description', MAX_DESCRIPTION_LENGTH, $event)"></textarea>
+                    <div class="char-counter"
+                        [class.warning]="getRemainingChars('description', MAX_DESCRIPTION_LENGTH) < 20"
+                        [class.danger]="getRemainingChars('description', MAX_DESCRIPTION_LENGTH) === 0">
+                        Caracteres restantes: {{ getRemainingChars('description', MAX_DESCRIPTION_LENGTH) }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Categoría: <span class="required">*</span></label>
+                    <select [(ngModel)]="newProduct.idCategory" name="idCategory" required #idCategory="ngModel">
+                        <option value="">Seleccione una categoría</option>
+                        <option *ngFor="let category of categories" [value]="category.idCategory">
+                            {{ category.categoryName }}
+                        </option>
+                    </select>
+                    <div *ngIf="(idCategory.invalid && (idCategory.dirty || idCategory.touched)) || formSubmitted" class="error-message">
+                        Categoría es requerida
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Proveedor: <span class="required">*</span></label>
+                    <select [(ngModel)]="newProduct.idSupplier" name="idSupplier" required #idSupplier="ngModel">
+                        <option value="">Seleccione un proveedor</option>
+                        <option *ngFor="let supplier of suppliers" [value]="supplier.idSupplier">
+                            {{ supplier.nameSupplier }}
+                        </option>
+                    </select>
+                    <div *ngIf="(idSupplier.invalid && (idSupplier.dirty || idSupplier.touched)) || formSubmitted" class="error-message">
+                        Proveedor es requerido
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Unidad de medida: <span class="required">*</span></label>
+                    <select [(ngModel)]="newProduct.idUnitOfSale" name="idUnitOfSale" required #idUnitOfSale="ngModel">
+                        <option value="">Seleccione una unidad</option>
+                        <option *ngFor="let unit of units" [value]="unit.idUnitOfSale">
+                            {{ unit.unityName }} ({{ unit.abbreviation }})
+                        </option>
+                    </select>
+                    <div *ngIf="(idUnitOfSale.invalid && (idUnitOfSale.dirty || idUnitOfSale.touched)) || formSubmitted" class="error-message">
+                        Unidad de medida es requerida
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Estado: <span class="required">*</span></label>
+                    <select [(ngModel)]="newProduct.status" name="status" required #status="ngModel">
+                        <option value="A">Activo</option>
+                        <option value="I">Inactivo</option>
+                    </select>
+                    <div *ngIf="(status.invalid && (status.dirty || status.touched)) || formSubmitted" class="error-message">
+                        Estado es requerido
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>¿Producto caduca?</label>
+                    <input class="checkbox" type="checkbox" [(ngModel)]="newProduct.isExpire" name="isExpire" (change)="newProduct.isExpire ? null : newProduct.dateExpire = ''">
+                </div>
+
+                <div class="form-group" *ngIf="newProduct.isExpire">
+                    <label>Fecha de caducidad: <span class="required">*</span></label>
+                    <input type="date" [(ngModel)]="newProduct.dateExpire" name="dateExpire" [required]="newProduct.isExpire" #dateExpire="ngModel">
+                    <div *ngIf="newProduct.isExpire && ((dateExpire.invalid && (dateExpire.dirty || dateExpire.touched)) || formSubmitted)" class="error-message">
+                        Fecha de caducidad es requerida
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group photo-upload">
+                <label>Fotografía <span class="required">*</span></label>
+                <div class="upload-container">
+                    <div class="image-preview" *ngIf="imagePreview">
+                        <img [src]="imagePreview" alt="Vista previa">
+                        <button type="button" class="btn-remove" (click)="removePhoto()">
+                            <span class="material-icons">close</span>
+                        </button>
+                    </div>
+                    <div class="upload-controls">
+                        <input type="file" id="productPhoto" (change)="handleImageUpload($event)" 
+                            accept="image/*" [disabled]="isLoading" hidden>
+                        <label for="productPhoto" class="btn-upload">
+                            <span class="material-icons">upload</span>
+                            {{ imagePreview ? 'Cambiar foto' : 'Subir foto' }}
+                        </label>
+                        <small>Tamaño máximo: 2MB (JPEG, PNG, JPG)</small>
+                        <div *ngIf="(formSubmitted || photoTouched) && !newProduct.imgBase64" class="error-message">
+                            La imagen del producto es obligatoria
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" 
+                        class="btn-submit"
+                        [disabled]="productForm.invalid || isLoading || !newProduct.imgBase64">
+                    {{ isLoading ? (isEditing ? 'Actualizando...' : 'Guardando...') : (isEditing ? 'Actualizar' : 'Guardar') }}
+                </button>
+                <button type="button" 
+                        class="btn-cancel"
+                        (click)="closeModal()"
+                        [disabled]="isLoading">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

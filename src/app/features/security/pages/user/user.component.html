@@ -70,11 +70,12 @@
                 </td>
                 <td class="btn-actions">
                     <button class="btn btn-info" (click)="openEditUserModal(user)" [disabled]="isLoading">
-                        
                         Editar
                     </button>
+                    <button class="btn btn-warning" (click)="confirmResetPassword(user)" [disabled]="isLoading">
+                        Restaurar Contraseña
+                    </button>
                     <button class="btn btn-danger" (click)="confirmDelete(user)" [disabled]="isLoading">
-                        
                         Eliminar
                     </button>
                 </td>
@@ -92,7 +93,6 @@
         </button>
     </div>
 </div>
-
 
 <div *ngIf="showModal" class="modal-overlay">
     <div class="modal-content">
@@ -183,11 +183,6 @@
                             Estado es requerido
                         </div>
                     </div>
-                    
-                    <!-- <div class="form-group">
-                        <label>Cambiar contraseña en primer login:</label>
-                        <input type="checkbox" [(ngModel)]="newUser.isChangePass" name="isChangePass" />
-                    </div> -->
                 </div>
             </div>
 

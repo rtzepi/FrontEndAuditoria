@@ -280,6 +280,38 @@ export class UserComponent implements OnInit {
       });
   }
 
+  confirmResetPassword(user: IUser) {
+    Swal.fire({
+      title: '¿Restaurar contraseña?',
+      text: `¿Estás seguro de restaurar la contraseña de ${user.userName}? La nueva contraseña será enviada al correo ${user.email}`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ffc107',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, restaurar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.resetPassword(user.idUser);
+      }
+    });
+  }
+
+  resetPassword(id: number) {
+    this.isLoading = true;
+    this.userService.resetPassword(id).subscribe({
+      next: (response: IUserResponse) => {
+        if (response.isSuccess) {
+          Swal.fire('Éxito', 'Contraseña restaurada correctamente. Se ha enviado un correo al usuario con la nueva contraseña.', 'success');
+        } else {
+          Swal.fire('Error', response.error || 'Error al restaurar contraseña', 'error');
+        }
+        this.isLoading = false;
+      },
+      error: (error) => this.handleError('Error al restaurar contraseña', error)
+    });
+  }
+
   confirmDelete(user: IUser) {
     Swal.fire({
       title: '¿Eliminar usuario?',
