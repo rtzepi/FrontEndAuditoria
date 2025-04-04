@@ -1,0 +1,357 @@
+// Variables básicas (defínelas al inicio del archivo)
+$primary-color: #6c5ce7;  // Color morado
+$error-color: #ef4444;    // Color rojo para errores
+$text-color: #333;        // Color de texto principal
+
+/* Estructura principal */
+.container {
+    padding: 20px;
+    overflow-x: hidden;
+    width: 95%;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    
+    h2 {
+        margin: 0;
+        color: $text-color;
+    }
+}
+
+/* Botones */
+.btn-primary {
+    background-color: $primary-color;
+    color: white;
+
+    &:hover {
+        background-color: darken($primary-color, 10%);
+    }
+}
+
+/* Mensajes de error */
+.error-message {
+    color: $error-color;
+    font-size: 12px;
+}
+
+/* Resto de tus estilos... */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 60px;
+    min-width: 0;
+
+    app-input-search {
+        width: 250px;
+        min-width: 180px;
+        flex-shrink: 1;
+    }
+
+    .add-category-btn {
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+}
+
+.add-category-btn {
+    background-color: $primary-color;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 10px;
+    cursor: pointer;
+
+    &:hover {
+        background-color: darken($primary-color, 10%);
+    }
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    margin-top: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 4px 8px;
+    text-align: left;
+    vertical-align: middle;
+    height: 50px;
+}
+
+th {
+    background: #eee;
+    font-weight: bold;
+    color: $primary-color;
+}
+
+tr {
+    border-bottom: 1px solid #ddd;
+}
+
+tr:hover {
+    background: #f9f9f9;
+}
+
+.btn-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    &-info {
+        background-color: #17a2b8;
+        color: white;
+
+        &:hover:not(:disabled) {
+            background-color: #138496;
+        }
+    }
+
+    &-danger {
+        background-color: #dc3545;
+        color: white;
+
+        &:hover:not(:disabled) {
+            background-color: #c82333;
+        }
+    }
+}
+
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    gap: 10px;
+}
+
+.btn-pagination {
+    background-color: $primary-color;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+
+    &:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.category-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+
+    label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+
+        .required {
+            color: #ef4444;
+        }
+    }
+
+    input, select, textarea {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+
+        &:focus {
+            outline: none;
+            border-color: $primary-color;
+        }
+
+        &.ng-invalid.ng-touched {
+            border-color: #ef4444 !important;
+        }
+    }
+
+    textarea {
+        min-height: 80px;
+        resize: vertical;
+    }
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    width: 100%;
+
+    .btn-submit {
+        background-color: $primary-color;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        border: none;
+        
+        &:hover:not(:disabled) {
+            background-color: darken($primary-color, 10%);
+        }
+        
+        &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    }
+    
+    .btn-cancel {
+        background-color: #6c757d;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        border: none;
+        
+        &:hover:not(:disabled) {
+            background-color: #5a6268;
+        }
+    }
+}
+
+.error-message {
+    color: #ef4444;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.btn-back {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: transparent;
+    color: $primary-color;
+    border: none;
+    padding: 8px 0;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    font-size: 14px;
+    transition: color 0.3s ease;
+
+    &:hover {
+        color: darken($primary-color, 10%);
+    }
+
+    .material-icons {
+        font-size: 20px;
+    }
+}
+
+.material-icons {
+    font-size: 24px;
+    vertical-align: middle;
+    color: #555;
+}
+
+@media (max-width: 768px) {
+    .container {
+        width: 95%;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+
+        h2 {
+            text-align: center;
+            padding-right: 0;
+        }
+
+        .header-actions {
+            flex-direction: row;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            gap: 20px;
+
+            app-input-search {
+                min-width: 150px;
+            }
+        }
+    }
+
+    .modal-actions {
+        flex-direction: column;
+
+        button {
+            width: 100%;
+        }
+    }
+
+    .btn-actions {
+        flex-direction: column;
+        gap: 5px;
+    }
+}
