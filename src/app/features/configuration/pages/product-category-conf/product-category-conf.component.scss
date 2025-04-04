@@ -86,7 +86,7 @@ table {
 
 th, td {
     padding: 4px 8px;
-    text-align: left;
+    text-align: center; 
     vertical-align: middle;
     height: 50px;
 }
@@ -354,4 +354,14 @@ tr:hover {
         flex-direction: column;
         gap: 5px;
     }
+}
+.char-counter {
+    text-align: right;
+    font-size: 0.8em;
+    color: #666;
+    margin-top: 5px;
+}
+.near-limit {
+    color: orange;
+    font-weight: bold;
 }
