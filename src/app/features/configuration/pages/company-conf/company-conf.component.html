@@ -1,1 +1,83 @@
-<p>company-conf works!</p>
+<div class="empresa-form-container">
+  <div class="contenido-con-logo">
+    <div class="formulario">
+      <div *ngIf="!modoEdicion" class="titulo-navegacion">
+        <a href="#" class="link-regreso" (click)="volver(); $event.preventDefault()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 0 1 .708.708L2.707 7.5H14.5A.5.5 0 0 1 15 8z" />
+          </svg>
+          <span>Empresa</span>
+        </a>
+      </div>
+
+      <div class="empresa-formulario" *ngIf="!modoEdicion">
+        <ng-container *ngFor="let campo of campos">
+          <div class="campo-formulario" *ngIf="campo.key !== 'celular'">
+            <label>{{ campo.label }}:</label>
+            <input [value]="empresa[campo.key]" readonly required />
+            <div *ngIf="!empresa[campo.key] && modoEdicion" class="error-message">
+              {{campo.label}} es obligatorio.
+            </div>
+          </div>
+        </ng-container>
+        <div class="btn-guardar">
+          <button type="button" (click)="modoEdicion = true">Editar</button>
+        </div>
+      </div>
+
+      <form class="empresa-formulario" *ngIf="modoEdicion" (ngSubmit)="guardarEmpresa()">
+        <ng-container *ngFor="let campo of campos">
+          <div class="campo-formulario" *ngIf="campo.key !== 'celular'">
+            <label>{{ campo.label }}:</label>
+            <input
+              type="text"
+              [(ngModel)]="empresa[campo.key]"
+              name="{{campo.key}}"
+              placeholder="{{campo.placeholder}}"
+              (input)="campo.key === 'telefono' ? validarTelefono() : null"
+              [class.error]="telefonoInvalido"
+              maxlength="{{campo.key === 'telefono' ? 8 : (campo.key === 'nit' ? 10 : '')}}"
+              required
+              [ngClass]="{'touched': touchedFields[campo.key]}"
+              (blur)="touchedFields[campo.key] = true"
+            />
+            <div *ngIf="!empresa[campo.key] && touchedFields[campo.key]" class="error-message">
+              {{campo.label}} es obligatorio.
+            </div>
+            <div *ngIf="telefonoInvalido && campo.key === 'telefono'" class="error-message">
+              Número incompleto. Debe tener 8 dígitos.
+            </div>
+            <div *ngIf="campo.key === 'nit' && empresa['nit'].length > 10" class="error-message">
+              El NIT no puede tener más de 10 dígitos.
+            </div>
+          </div>
+        </ng-container>
+        <div class="btn-guardar">
+          <button type="submit">Guardar</button>
+          <button type="button" class="cancelar" (click)="cancelarEdicion()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="logo-columna" *ngIf="vistaPrevia || modoEdicion">
+      <img [src]="vistaPrevia" alt="Logo de la empresa" />
+      <button *ngIf="modoEdicion" type="button" class="boton-subir-logo" (click)="abrirModal()">Subir foto</button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="modalAbierto" class="modal">
+  <div class="modal-content">
+    <span class="cerrar" (click)="cerrarModal()">&times;</span>
+    <h3>Subir logo de la empresa</h3>
+    <input type="file" accept="image/*" (change)="onArchivoSeleccionado($event)" />
+    <div *ngIf="imagenTemporal" class="logo-previo">
+      <img [src]="imagenTemporal" alt="Vista previa del logo" />
+    </div>
+    <div class="acciones-modal">
+      <button (click)="guardarImagen()">Guardar imagen</button>
+      <button (click)="cerrarModal()" class="cancelar">Cancelar</button>
+    </div>
+  </div>
+</div>
+
