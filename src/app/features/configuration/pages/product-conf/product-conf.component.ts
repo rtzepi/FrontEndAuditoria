@@ -38,7 +38,7 @@ export class ProductConfComponent implements OnInit {
     currentProductId: number | null = null;
     formSubmitted = false;
 
-  
+
     readonly MAX_NAME_LENGTH = 50;
     readonly MAX_DESCRIPTION_LENGTH = 500;
 
@@ -58,7 +58,7 @@ export class ProductConfComponent implements OnInit {
         status: 's',
         isExpire: false,
         dateExpire: null,
-        idImage: null,
+        idImage: 0,
         image: null,
         imgBase64: '',
         idCategory: 0,
@@ -359,30 +359,30 @@ export class ProductConfComponent implements OnInit {
     }
 
     resetForm() {
-      this.imagePreview = null;
-      this.newProduct = {
-          idProduct: 0,
-          nameProduct: '',
-          description: null,
-          status: 's',
-          isExpire: false,
-          dateExpire: null,
-          idImage: null,
-          image: null,
-          imgBase64: '', 
-          idCategory: 0, 
-          category: null,
-          idSupplier: 0,
-          supplier: null,
-          idUnitOfSale: null,
-          unitOfSale: null,
-          picture: ''
-      };
-      this.isEditing = false;
-      this.currentProductId = null;
-      this.formSubmitted = false;
-      this.newProduct.imgBase64 = '';
-  }
+    this.imagePreview = null;
+    this.newProduct = {
+        idProduct: 0,
+        nameProduct: '',
+        description: null,
+        status: 's',
+        isExpire: false,
+        dateExpire: null,
+        idImage: 0,
+        image: null,
+        imgBase64: null,
+        idCategory: 0, 
+        category: null,
+        idSupplier: 0,
+        supplier: null,
+        idUnitOfSale: null,
+        unitOfSale: null,
+        picture: ''
+    };
+    this.isEditing = false;
+    this.currentProductId = null;
+    this.formSubmitted = false;
+    this.newProduct.imgBase64 = '';
+}
 
     private handleError(message: string, error: any) {
         console.error('Error completo:', error);

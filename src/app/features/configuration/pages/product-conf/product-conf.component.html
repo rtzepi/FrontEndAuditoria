@@ -162,13 +162,16 @@
             <div class="form-group">
                 <label>Descripción</label>
                 <textarea [(ngModel)]="newProduct.description" name="description" 
-                        maxlength="500" #description="ngModel"
+                        maxlength="100" #description="ngModel"
                         (input)="validateDescription()"></textarea>
+                        <div *ngIf="idSupplier.invalid && (idSupplier.dirty || idSupplier.touched)" class="error-message">
+                            Proveedor es requerido
+                        </div>
                 <div *ngIf="description.errors?.['maxlength']" class="error-message">
-                    Máximo 500 caracteres
+                    Máximo 100 caractereszzz
                 </div>
                 <div class="character-counter">
-                    {{ (newProduct.description ? newProduct.description.length : 0) }}/500
+                    {{ (newProduct.description ? newProduct.description.length : 0) }}/100
                 </div>
             </div>
 

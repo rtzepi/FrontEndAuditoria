@@ -20,21 +20,21 @@ export class ProductService {
     constructor(private http: HttpClient) { }
 
     private prepareProductData(product: IProduct): any {
-      return {
-          idProduct: product.idProduct,
-          nameProduct: product.nameProduct,
-          description: product.description || null,
-          status: product.status,
-          isExpire: product.isExpire,
-          dateExpire: product.dateExpire,
-          imgBase64: product.imgBase64,
-          idImage: product.idImage ? Number(product.idImage) : null,
-          idCategory: product.idCategory ? Number(product.idCategory) : null,
-          idSupplier: product.idSupplier ? Number(product.idSupplier) : null, 
-          idUnitOfSale: product.idUnitOfSale ? Number(product.idUnitOfSale) : null
-      };
-  }
-  
+    return {
+        idProduct: product.idProduct,
+        nameProduct: product.nameProduct,
+        description: product.description || null,
+        status: product.status,
+        isExpire: product.isExpire,
+        dateExpire: product.dateExpire,
+        imgBase64: product.imgBase64,
+        idImage: product.idImage ? Number(product.idImage) : Number,
+        idCategory: product.idCategory ? Number(product.idCategory) : null,
+        idSupplier: product.idSupplier ? Number(product.idSupplier) : null, 
+        idUnitOfSale: product.idUnitOfSale ? Number(product.idUnitOfSale) : null
+    };
+}
+
     getProducts(): Observable<IProductArrayResponse> {
         return this.http.get<IProductArrayResponse>(`${this.apiUrl}/List`);
     }

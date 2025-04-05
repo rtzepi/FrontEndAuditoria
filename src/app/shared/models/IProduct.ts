@@ -54,9 +54,9 @@ export interface IProduct {
     status: string;
     isExpire: boolean;
     dateExpire: string | null;
-    idImage: number | null; 
-    image: IProductImage | null;
-    imgBase64: string; 
+    idImage: number; 
+    image?: IProduct | null;
+    imgBase64: string | null;
     idCategory: number; 
     category: ICategory | null;
     idSupplier: number; 
