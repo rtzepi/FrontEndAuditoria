@@ -1,1 +1,17 @@
-<p>shopping-menu works!</p>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+
+<div class="menu-container">
+  <div *ngFor="let menu of menus" class="menu-card-wrapper">
+    <mat-card class="menu-card">
+    <mat-card-header>
+        <span class="material-icons-outlined menu-icon">{{ menu.icon }}</span>
+        <span class="menu-name">{{ menu.nameMenu }}</span>
+    </mat-card-header>
+    <mat-card-content>
+        <button mat-button [routerLink]="menu.route" class="menu-button">
+        Ir a {{ menu.nameMenu }}
+        </button>
+    </mat-card-content>
+    </mat-card>
+</div>
+</div>

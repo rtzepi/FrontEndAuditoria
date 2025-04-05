@@ -27,6 +27,7 @@ export class RoleComponent implements OnInit {
   isLoading = false;
   isEditing = false;
   currentRoleId: number | null = null;
+  nameExists = false;
 
   currentPage = 1;
   itemsPerPage = 10;
@@ -100,6 +101,24 @@ export class RoleComponent implements OnInit {
     );
   }
 
+  checkRoleNameExists() {
+    if (!this.newRole.roleName || this.newRole.roleName.trim() === '') {
+      this.nameExists = false;
+      return;
+    }
+    if (this.isEditing && this.currentRoleId) {
+      const currentRole = this.roles.find(r => r.idRole === this.currentRoleId);
+      if (currentRole && currentRole.roleName === this.newRole.roleName) {
+        this.nameExists = false;
+        return;
+      }
+    }
+
+    this.nameExists = this.roles.some(role => 
+      role.roleName?.toLowerCase() === this.newRole.roleName?.toLowerCase()
+    );
+  }
+
   get paginatedRoles() {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     return this.filteredRoles.slice(startIndex, startIndex + this.itemsPerPage);
@@ -127,6 +146,7 @@ export class RoleComponent implements OnInit {
   openEditRoleModal(role: IRole) {
     this.isEditing = true;
     this.currentRoleId = role.idRole;
+    this.nameExists = false;
     
     this.newRole = {
       roleName: role.roleName,
@@ -139,7 +159,7 @@ export class RoleComponent implements OnInit {
   }
 
   addRole() {
-    if (this.roleForm.invalid) return;
+    if (this.roleForm.invalid || this.nameExists) return;
 
     this.isLoading = true;
     this.roleService.addRole(this.newRole).subscribe({
@@ -162,7 +182,7 @@ export class RoleComponent implements OnInit {
   }
 
   updateRole() {
-    if (!this.currentRoleId || this.roleForm.invalid) return;
+    if (!this.currentRoleId || this.roleForm.invalid || this.nameExists) return;
 
     const updateData: IRoleUpdateRequest = {
       ...this.newRole,
@@ -240,6 +260,7 @@ export class RoleComponent implements OnInit {
     };
     this.isEditing = false;
     this.currentRoleId = null;
+    this.nameExists = false;
   }
 
   private handleError(message: string, error: any) {

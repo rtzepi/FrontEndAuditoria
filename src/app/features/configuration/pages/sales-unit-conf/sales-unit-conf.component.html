@@ -1,1 +1,168 @@
-<p>sales-unit-conf works!</p>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+<div class="container">
+    <button class="btn-back" (click)="goBack()">
+        <span class="material-icons">arrow_back</span>
+        Volver
+    </button>
+    
+    <div class="header">
+        <h2>Unidades de Venta</h2>
+        <div class="header-actions">
+            <app-input-search 
+                [placeholder]="'Buscar unidades...'" 
+                (searchChange)="handleSearch($event)">
+            </app-input-search>
+            <button (click)="openAddUnitModal()" class="btn btn-primary add-unit-btn" [disabled]="isLoading">
+                <span class="material-icons">add</span>
+            </button>
+        </div>
+    </div>
+
+    <div *ngIf="isLoading && units.length === 0" class="loading-spinner">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <div *ngIf="!isLoading && filteredUnits.length === 0" class="no-results">
+        No se encontraron unidades de venta
+    </div>
+
+    <table *ngIf="filteredUnits.length > 0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Abreviatura</th>
+                <th>Descripción</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let unit of paginatedUnits">
+                <td>{{ unit.idUnitOfSale }}</td>
+                <td>{{ unit.unityName }}</td>
+                <td>{{ unit.abbreviation }}</td>
+                <td>{{ unit.description }}</td>
+                <td>
+                    <span [class.active]="unit.status === 'E'" [class.inactive]="unit.status !== 'E'">
+                        {{ getStatusText(unit.status) }}
+                    </span>
+                </td>
+                <td class="btn-actions">
+                    <button class="btn btn-info" (click)="openEditUnitModal(unit)" [disabled]="isLoading">
+                        Editar
+                    </button>
+                    <button class="btn btn-danger" (click)="confirmDelete(unit)" [disabled]="isLoading">
+                        Eliminar
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="pagination-controls" *ngIf="filteredUnits.length > itemsPerPage">
+        <button (click)="previousPage()" [disabled]="currentPage === 1" class="btn-pagination">
+            Anterior
+        </button>
+        <span>Página {{currentPage}} de {{totalPages}}</span>
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages" class="btn-pagination">
+            Siguiente
+        </button>
+    </div>
+</div>
+
+<div *ngIf="showModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>{{ isEditing ? 'Editar Unidad de Venta' : 'Agregar Unidad de Venta' }}</h2>
+        
+        <form #unitForm="ngForm" (ngSubmit)="isEditing ? updateUnit() : addUnit()" class="unit-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nombre: <span class="required">*</span></label>
+                    <input type="text" 
+                        [(ngModel)]="newUnit.unityName" 
+                        name="unityName" 
+                        required 
+                        #unityName="ngModel"
+                        maxlength="{{MAX_NAME_LENGTH}}"
+                        (input)="handleInput('unityName', MAX_NAME_LENGTH, $event)">
+                    <div class="char-counter" 
+                        [class.warning]="getRemainingChars('unityName', MAX_NAME_LENGTH) < 5"
+                        [class.danger]="getRemainingChars('unityName', MAX_NAME_LENGTH) === 0">
+                        Caracteres restantes: {{ getRemainingChars('unityName', MAX_NAME_LENGTH) }}
+                    </div>
+                    <div *ngIf="unityName.invalid && (unityName.dirty || unityName.touched)" class="error-message">
+                        Nombre es requerido (máx. {{MAX_NAME_LENGTH}} caracteres)
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Abreviatura: <span class="required">*</span></label>
+                    <input type="text" 
+                        [(ngModel)]="newUnit.abbreviation" 
+                        name="abbreviation" 
+                        required 
+                        #abbreviation="ngModel"
+                        maxlength="{{MAX_ABBREVIATION_LENGTH}}"
+                        (input)="handleInput('abbreviation', MAX_ABBREVIATION_LENGTH, $event)">
+                    <div class="char-counter"
+                        [class.warning]="getRemainingChars('abbreviation', MAX_ABBREVIATION_LENGTH) < 3"
+                        [class.danger]="getRemainingChars('abbreviation', MAX_ABBREVIATION_LENGTH) === 0">
+                        Caracteres restantes: {{ getRemainingChars('abbreviation', MAX_ABBREVIATION_LENGTH) }}
+                    </div>
+                    <div *ngIf="abbreviation.invalid && (abbreviation.dirty || abbreviation.touched)" class="error-message">
+                        Abreviatura es requerida (máx. {{MAX_ABBREVIATION_LENGTH}} caracteres)
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Descripción:</label>
+                    <textarea [(ngModel)]="newUnit.description" 
+                            name="description" 
+                            rows="3"
+                            maxlength="{{MAX_DESCRIPTION_LENGTH}}"
+                            (input)="handleInput('description', MAX_DESCRIPTION_LENGTH, $event)"></textarea>
+                    <div class="char-counter"
+                        [class.warning]="getRemainingChars('description', MAX_DESCRIPTION_LENGTH) < 20"
+                        [class.danger]="getRemainingChars('description', MAX_DESCRIPTION_LENGTH) === 0">
+                        Caracteres restantes: {{ getRemainingChars('description', MAX_DESCRIPTION_LENGTH) }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Estado: <span class="required">*</span></label>
+                    <select [(ngModel)]="newUnit.status" name="status" required #status="ngModel">
+                        <option value="E">Activo</option>
+                        <option value="D">Inactivo</option>
+                    </select>
+                    <div *ngIf="status.invalid && (status.dirty || status.touched)" class="error-message">
+                        Estado es requerido
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" 
+                        class="btn-submit"
+                        [disabled]="unitForm.invalid || isLoading">
+                    {{ isLoading ? (isEditing ? 'Actualizando...' : 'Guardando...') : (isEditing ? 'Actualizar' : 'Guardar') }}
+                </button>
+                <button type="button" 
+                        class="btn-cancel"
+                        (click)="closeModal()"
+                        [disabled]="isLoading">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

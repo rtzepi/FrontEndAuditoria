@@ -21,6 +21,7 @@ import { Location } from '@angular/common';
 })
 export class EmployeeComponent implements OnInit {
   @ViewChild('employeeForm') employeeForm!: NgForm;
+  photoTouched = false;
   showModal = false;
   employees: IEmployee[] = [];
   filteredEmployees: IEmployee[] = [];
@@ -28,6 +29,13 @@ export class EmployeeComponent implements OnInit {
   isLoading = false;
   isEditing = false;
   currentEmployeeId: number | null = null;
+  formSubmitted = false;
+
+  // Límites de caracteres
+  readonly MAX_NAME_LENGTH = 50;
+  readonly MAX_LASTNAME_LENGTH = 50;
+  readonly MAX_PHONE_LENGTH = 8;
+  readonly MAX_EMAIL_LENGTH = 100;
 
   currentPage = 1;
   itemsPerPage = 10;
@@ -50,9 +58,11 @@ export class EmployeeComponent implements OnInit {
   };
 
   constructor(private employeeService: EmployeeService, private location: Location) {}
+
   goBack() {
     this.location.back();
-}
+  }
+
   ngOnInit() {
     this.loadEmployees();
     this.setupSearch();
@@ -64,7 +74,6 @@ export class EmployeeComponent implements OnInit {
       next: (response) => {
         if (response.isSuccess && response.value) {
           this.employees = response.value;
-          console.log(this.employees)
           this.filteredEmployees = [...this.employees];
         }
         this.isLoading = false;
@@ -82,6 +91,81 @@ export class EmployeeComponent implements OnInit {
       this.filterEmployees();
       this.currentPage = 1;
     });
+  }
+
+  handleInput(field: 'firstName' | 'middleName' | 'fatherLastName' | 'motherLastName' | 'email' | 'phoneNumber', 
+              maxLength: number, event: Event) {
+    const input = event.target as HTMLInputElement;
+    const value = input.value;
+    
+    if (value.length > maxLength) {
+      input.value = value.substring(0, maxLength);
+      this.newEmployee[field] = input.value;
+    }
+  }
+
+  getRemainingChars(field: 'firstName' | 'middleName' | 'fatherLastName' | 'motherLastName' | 'email' | 'phoneNumber', 
+                  maxLength: number): number {
+    const value = this.newEmployee[field] || '';
+    return maxLength - value.length;
+  }
+
+  validateNumber(event: KeyboardEvent): boolean {
+    const charCode = (event.which) ? event.which : event.keyCode;
+    if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+      event.preventDefault();
+      return false;
+    }
+    return true;
+  }
+
+  onSubmit() {
+    this.formSubmitted = true;
+    
+    if (!this.newEmployee.imgBase64) {
+      Swal.fire('Error', 'La fotografía es requerida', 'error');
+      return;
+    }
+
+    if (this.newEmployee.firstName.length > this.MAX_NAME_LENGTH) {
+      Swal.fire('Error', `El primer nombre no puede exceder ${this.MAX_NAME_LENGTH} caracteres`, 'error');
+      return;
+    }
+
+    if (this.newEmployee.middleName && this.newEmployee.middleName.length > this.MAX_NAME_LENGTH) {
+      Swal.fire('Error', `El segundo nombre no puede exceder ${this.MAX_NAME_LENGTH} caracteres`, 'error');
+      return;
+    }
+
+    if (this.newEmployee.fatherLastName.length > this.MAX_LASTNAME_LENGTH) {
+      Swal.fire('Error', `El primer apellido no puede exceder ${this.MAX_LASTNAME_LENGTH} caracteres`, 'error');
+      return;
+    }
+
+    if (this.newEmployee.motherLastName && this.newEmployee.motherLastName.length > this.MAX_LASTNAME_LENGTH) {
+      Swal.fire('Error', `El segundo apellido no puede exceder ${this.MAX_LASTNAME_LENGTH} caracteres`, 'error');
+      return;
+    }
+
+    if (this.newEmployee.email.length > this.MAX_EMAIL_LENGTH) {
+      Swal.fire('Error', `El email no puede exceder ${this.MAX_EMAIL_LENGTH} caracteres`, 'error');
+      return;
+    }
+
+    if (this.newEmployee.phoneNumber.length !== this.MAX_PHONE_LENGTH) {
+      Swal.fire('Error', `El teléfono debe tener exactamente ${this.MAX_PHONE_LENGTH} dígitos`, 'error');
+      return;
+    }
+
+    if (this.employeeForm.invalid) {
+      return;
+    }
+
+    if (this.isEditing) {
+      this.updateEmployee();
+    } else {
+      this.addEmployee();
+    }
   }
 
   handleSearch(searchTerm: string) {
@@ -147,38 +231,42 @@ export class EmployeeComponent implements OnInit {
   }
 
   handleImageUpload(event: Event) {
+    this.photoTouched = true;
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
 
     if (!file.type.match(/image\/(jpeg|png|jpg)/)) {
-      Swal.fire('Error', 'Solo se permiten imágenes (JPEG, PNG, JPG)', 'error');
-      return;
+        Swal.fire('Error', 'Solo se permiten imágenes (JPEG, PNG, JPG)', 'error');
+        return;
     }
 
     if (file.size > 2097152) {
-      Swal.fire('Error', 'La imagen no debe exceder los 2MB', 'error');
-      return;
+        Swal.fire('Error', 'La imagen no debe exceder los 2MB', 'error');
+        return;
     }
 
     const reader = new FileReader();
     reader.onload = (e: ProgressEvent<FileReader>) => {
-      if (e.target?.result) {
-        this.imagePreview = e.target.result as string;
-        this.newEmployee.imgBase64 = (e.target.result as string).split(',')[1];
-      }
+        if (e.target?.result) {
+            this.imagePreview = e.target.result as string;
+            this.newEmployee.imgBase64 = (e.target.result as string).split(',')[1];
+        }
     };
     reader.readAsDataURL(file);
   }
 
   removePhoto() {
+    this.photoTouched = true;
     this.imagePreview = null;
     this.newEmployee.imgBase64 = null;
+    const fileInput = document.getElementById('employeePhoto') as HTMLInputElement;
+    if (fileInput) {
+        fileInput.value = '';
+    }
   }
 
   addEmployee() {
-    if (this.employeeForm.invalid) return;
-
     this.isLoading = true;
     this.employeeService.addEmployee(this.newEmployee).subscribe({
       next: (response) => {
@@ -197,7 +285,7 @@ export class EmployeeComponent implements OnInit {
   }
 
   updateEmployee() {
-    if (!this.currentEmployeeId || this.employeeForm.invalid) return;
+    if (!this.currentEmployeeId) return;
 
     this.isLoading = true;
     this.employeeService.updateEmployee(this.currentEmployeeId, this.newEmployee)
@@ -256,6 +344,7 @@ export class EmployeeComponent implements OnInit {
 
   closeModal() {
     this.showModal = false;
+    this.formSubmitted = false;
     this.resetForm();
   }
 
@@ -277,6 +366,7 @@ export class EmployeeComponent implements OnInit {
     };
     this.isEditing = false;
     this.currentEmployeeId = null;
+    this.formSubmitted = false;
   }
 
   private handleError(message: string, error: any) {
