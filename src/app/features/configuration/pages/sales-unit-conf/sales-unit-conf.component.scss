@@ -6,7 +6,6 @@
     margin: 0 auto;
 }
 
-
 .btn-back {
     display: flex;
     align-items: center;
@@ -28,7 +27,6 @@
         font-size: 20px;
     }
 }
-
 
 .header {
     display: flex;
@@ -52,7 +50,6 @@
     gap: 60px;
     min-width: 0;
 }
-
 
 .add-unit-btn {
     background-color: #6c5ce7;
@@ -81,7 +78,6 @@
     }
 }
 
-
 table {
     width: 100%;
     border-collapse: collapse;
@@ -93,8 +89,8 @@ table {
 
     th, td {
         padding: 12px 8px;
-        text-align: left;
-        vertical-align: middle;
+        text-align: center; /* Centrado horizontal */
+        vertical-align: middle; /* Centrado vertical */
     }
 
     th {
@@ -119,7 +115,6 @@ table {
     }
 }
 
-
 .active {
     background-color: #e6f7ee;
     color: #0d8a4a;
@@ -127,6 +122,7 @@ table {
     border-radius: 12px;
     font-size: 0.75rem;
     font-weight: 500;
+    display: inline-block; /* Para que el centrado funcione correctamente */
 }
 
 .inactive {
@@ -136,13 +132,14 @@ table {
     border-radius: 12px;
     font-size: 0.75rem;
     font-weight: 500;
+    display: inline-block; /* Para que el centrado funcione correctamente */
 }
-
 
 .btn-actions {
     display: flex;
     gap: 8px;
     margin-top: 8px;
+    justify-content: center; /* Centrar los botones de acciones */
 }
 
 .btn {
@@ -155,6 +152,7 @@ table {
     display: flex;
     align-items: center;
     gap: 4px;
+    justify-content: center; /* Centrar texto en botones */
 
     &:disabled {
         opacity: 0.6;
@@ -179,7 +177,6 @@ table {
         }
     }
 }
-
 
 .pagination-controls {
     display: flex;
@@ -207,7 +204,6 @@ table {
         }
     }
 }
-
 
 .modal-overlay {
     position: fixed;
@@ -237,7 +233,6 @@ table {
         color: #6c5ce7;
     }
 }
-
 
 .unit-form {
     display: flex;
@@ -289,7 +284,6 @@ table {
     }
 }
 
-
 .modal-actions {
     display: flex;
     justify-content: flex-end;
@@ -332,13 +326,11 @@ table {
     }
 }
 
-
 .error-message {
     color: #ef4444;
     font-size: 12px;
     margin-top: 5px;
 }
-
 
 .loading-spinner {
     display: flex;
@@ -355,7 +347,6 @@ table {
     margin-top: 20px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
-
 
 @media (max-width: 768px) {
     .container {

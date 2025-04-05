@@ -31,6 +31,12 @@ export class EmployeeComponent implements OnInit {
   currentEmployeeId: number | null = null;
   formSubmitted = false;
 
+  // Límites de caracteres
+  readonly MAX_NAME_LENGTH = 50;
+  readonly MAX_LASTNAME_LENGTH = 50;
+  readonly MAX_PHONE_LENGTH = 8;
+  readonly MAX_EMAIL_LENGTH = 100;
+
   currentPage = 1;
   itemsPerPage = 10;
   searchTerm = '';
@@ -87,6 +93,23 @@ export class EmployeeComponent implements OnInit {
     });
   }
 
+  handleInput(field: 'firstName' | 'middleName' | 'fatherLastName' | 'motherLastName' | 'email' | 'phoneNumber', 
+              maxLength: number, event: Event) {
+    const input = event.target as HTMLInputElement;
+    const value = input.value;
+    
+    if (value.length > maxLength) {
+      input.value = value.substring(0, maxLength);
+      this.newEmployee[field] = input.value;
+    }
+  }
+
+  getRemainingChars(field: 'firstName' | 'middleName' | 'fatherLastName' | 'motherLastName' | 'email' | 'phoneNumber', 
+                   maxLength: number): number {
+    const value = this.newEmployee[field] || '';
+    return maxLength - value.length;
+  }
+
   validateNumber(event: KeyboardEvent): boolean {
     const charCode = (event.which) ? event.which : event.keyCode;
     if (charCode > 31 && (charCode < 48 || charCode > 57)) {
@@ -101,6 +124,37 @@ export class EmployeeComponent implements OnInit {
     
     if (!this.newEmployee.imgBase64) {
       Swal.fire('Error', 'La fotografía es requerida', 'error');
+      return;
+    }
+
+    // Validación adicional de longitudes
+    if (this.newEmployee.firstName.length > this.MAX_NAME_LENGTH) {
+      Swal.fire('Error', `El primer nombre no puede exceder ${this.MAX_NAME_LENGTH} caracteres`, 'error');
+      return;
+    }
+
+    if (this.newEmployee.middleName && this.newEmployee.middleName.length > this.MAX_NAME_LENGTH) {
+      Swal.fire('Error', `El segundo nombre no puede exceder ${this.MAX_NAME_LENGTH} caracteres`, 'error');
+      return;
+    }
+
+    if (this.newEmployee.fatherLastName.length > this.MAX_LASTNAME_LENGTH) {
+      Swal.fire('Error', `El primer apellido no puede exceder ${this.MAX_LASTNAME_LENGTH} caracteres`, 'error');
+      return;
+    }
+
+    if (this.newEmployee.motherLastName && this.newEmployee.motherLastName.length > this.MAX_LASTNAME_LENGTH) {
+      Swal.fire('Error', `El segundo apellido no puede exceder ${this.MAX_LASTNAME_LENGTH} caracteres`, 'error');
+      return;
+    }
+
+    if (this.newEmployee.email.length > this.MAX_EMAIL_LENGTH) {
+      Swal.fire('Error', `El email no puede exceder ${this.MAX_EMAIL_LENGTH} caracteres`, 'error');
+      return;
+    }
+
+    if (this.newEmployee.phoneNumber.length !== this.MAX_PHONE_LENGTH) {
+      Swal.fire('Error', `El teléfono debe tener exactamente ${this.MAX_PHONE_LENGTH} dígitos`, 'error');
       return;
     }
 
@@ -201,17 +255,17 @@ export class EmployeeComponent implements OnInit {
         }
     };
     reader.readAsDataURL(file);
-}
-
-removePhoto() {
-  this.photoTouched = true;
-  this.imagePreview = null;
-  this.newEmployee.imgBase64 = null;
-  const fileInput = document.getElementById('employeePhoto') as HTMLInputElement;
-  if (fileInput) {
-      fileInput.value = '';
   }
-}
+
+  removePhoto() {
+    this.photoTouched = true;
+    this.imagePreview = null;
+    this.newEmployee.imgBase64 = null;
+    const fileInput = document.getElementById('employeePhoto') as HTMLInputElement;
+    if (fileInput) {
+        fileInput.value = '';
+    }
+  }
 
   addEmployee() {
     this.isLoading = true;

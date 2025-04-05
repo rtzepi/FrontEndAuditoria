@@ -39,7 +39,10 @@ export class ShoppingMenuComponent implements OnInit{
                   break;
                 case 'Historial de Compras':
                   menu.icon ='shopping_cart';
-                break;
+                  break;
+                case 'Nueva Compra':
+                  menu.icon = 'paid';
+                  break;
                 default:
                   menu.icon = 'settings'; 
               }

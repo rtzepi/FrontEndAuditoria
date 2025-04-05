@@ -89,20 +89,32 @@
                 <div class="form-group">
                     <label for="nameSupplier">Nombre Proveedor <span class="required">*</span></label>
                     <input type="text" id="nameSupplier" [(ngModel)]="newSupplier.nameSupplier" name="nameSupplier" 
-                        required maxlength="100" #nameSupplier="ngModel">
+                        required maxlength="{{MAX_NAME_LENGTH}}" #nameSupplier="ngModel"
+                        (input)="handleInput('nameSupplier', MAX_NAME_LENGTH, $event)">
+                    <div class="char-counter"
+                        [class.warning]="getRemainingChars('nameSupplier', MAX_NAME_LENGTH) < 10"
+                        [class.danger]="getRemainingChars('nameSupplier', MAX_NAME_LENGTH) === 0">
+                        Caracteres restantes: {{ getRemainingChars('nameSupplier', MAX_NAME_LENGTH) }}
+                    </div>
                     <div *ngIf="nameSupplier.invalid && (nameSupplier.dirty || nameSupplier.touched || formSubmitted)" 
                         class="error-message">
-                        El nombre del proveedor es requerido
+                        El nombre del proveedor es requerido (máx. {{MAX_NAME_LENGTH}} caracteres)
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label for="nameContact">Nombre Contacto <span class="required">*</span></label>
                     <input type="text" id="nameContact" [(ngModel)]="newSupplier.nameContact" name="nameContact" 
-                        required maxlength="100" #nameContact="ngModel">
+                        required maxlength="{{MAX_NAME_LENGTH}}" #nameContact="ngModel"
+                        (input)="handleInput('nameContact', MAX_NAME_LENGTH, $event)">
+                    <div class="char-counter"
+                        [class.warning]="getRemainingChars('nameContact', MAX_NAME_LENGTH) < 10"
+                        [class.danger]="getRemainingChars('nameContact', MAX_NAME_LENGTH) === 0">
+                        Caracteres restantes: {{ getRemainingChars('nameContact', MAX_NAME_LENGTH) }}
+                    </div>
                     <div *ngIf="nameContact.invalid && (nameContact.dirty || nameContact.touched || formSubmitted)" 
                         class="error-message">
-                        El nombre de contacto es requerido
+                        El nombre de contacto es requerido (máx. {{MAX_NAME_LENGTH}} caracteres)
                     </div>
                 </div>
             </div>
@@ -111,23 +123,35 @@
                 <div class="form-group">
                     <label for="phoneNumber">Teléfono Proveedor <span class="required">*</span></label>
                     <input type="text" id="phoneNumber" [(ngModel)]="newSupplier.phoneNumber" name="phoneNumber"
-                        required pattern="[0-9]{8}" maxlength="8" #phoneNumber="ngModel"
-                        (keypress)="validateNumber($event)">
+                        required pattern="[0-9]{8}" maxlength="{{MAX_PHONE_LENGTH}}" #phoneNumber="ngModel"
+                        (keypress)="validateNumber($event)"
+                        (input)="handleInput('phoneNumber', MAX_PHONE_LENGTH, $event)">
+                    <div class="char-counter"
+                        [class.warning]="getRemainingChars('phoneNumber', MAX_PHONE_LENGTH) < 2"
+                        [class.danger]="getRemainingChars('phoneNumber', MAX_PHONE_LENGTH) === 0">
+                        Caracteres restantes: {{ getRemainingChars('phoneNumber', MAX_PHONE_LENGTH) }}
+                    </div>
                     <div *ngIf="phoneNumber.invalid && (phoneNumber.dirty || phoneNumber.touched || formSubmitted)" 
                         class="error-message">
                         <span *ngIf="phoneNumber.errors?.['required']">Teléfono es requerido</span>
-                        <span *ngIf="phoneNumber.errors?.['pattern']">Debe contener solo números (8-15 dígitos)</span>
+                        <span *ngIf="phoneNumber.errors?.['pattern']">Debe contener exactamente 8 dígitos</span>
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label for="phoneNumberContact">Teléfono Contacto</label>
                     <input type="text" id="phoneNumberContact" [(ngModel)]="newSupplier.phoneNumberContact"
-                        name="phoneNumberContact" pattern="[0-9]{8}" maxlength="8" 
-                        #phoneNumberContact="ngModel" (keypress)="validateNumber($event)">
+                        name="phoneNumberContact" pattern="[0-9]{8}" maxlength="{{MAX_PHONE_LENGTH}}" 
+                        #phoneNumberContact="ngModel" (keypress)="validateNumber($event)"
+                        (input)="handleInput('phoneNumberContact', MAX_PHONE_LENGTH, $event)">
+                    <div class="char-counter"
+                        [class.warning]="getRemainingChars('phoneNumberContact', MAX_PHONE_LENGTH) < 2"
+                        [class.danger]="getRemainingChars('phoneNumberContact', MAX_PHONE_LENGTH) === 0">
+                        Caracteres restantes: {{ getRemainingChars('phoneNumberContact', MAX_PHONE_LENGTH) }}
+                    </div>
                     <div *ngIf="phoneNumberContact.invalid && (phoneNumberContact.dirty || phoneNumberContact.touched)" 
                         class="error-message">
-                        <span *ngIf="phoneNumberContact.errors?.['pattern']">Debe contener solo números (8-15 dígitos)</span>
+                        <span *ngIf="phoneNumberContact.errors?.['pattern']">Debe contener exactamente 8 dígitos</span>
                     </div>
                 </div>
             </div>
@@ -136,7 +160,13 @@
                 <div class="form-group">
                     <label for="email">Email <span class="required">*</span></label>
                     <input type="email" id="email" [(ngModel)]="newSupplier.email" name="email" 
-                        required email maxlength="100" #email="ngModel">
+                        required email maxlength="{{MAX_EMAIL_LENGTH}}" #email="ngModel"
+                        (input)="handleInput('email', MAX_EMAIL_LENGTH, $event)">
+                    <div class="char-counter"
+                        [class.warning]="getRemainingChars('email', MAX_EMAIL_LENGTH) < 10"
+                        [class.danger]="getRemainingChars('email', MAX_EMAIL_LENGTH) === 0">
+                        Caracteres restantes: {{ getRemainingChars('email', MAX_EMAIL_LENGTH) }}
+                    </div>
                     <div *ngIf="email.invalid && (email.dirty || email.touched || formSubmitted)" 
                         class="error-message">
                         <span *ngIf="email.errors?.['required']">Email es requerido</span>
@@ -147,10 +177,16 @@
                 <div class="form-group">
                     <label for="address">Dirección <span class="required">*</span></label>
                     <input type="text" id="address" [(ngModel)]="newSupplier.address" name="address" 
-                        required maxlength="255" #address="ngModel">
+                        required maxlength="{{MAX_ADDRESS_LENGTH}}" #address="ngModel"
+                        (input)="handleInput('address', MAX_ADDRESS_LENGTH, $event)">
+                    <div class="char-counter"
+                        [class.warning]="getRemainingChars('address', MAX_ADDRESS_LENGTH) < 10"
+                        [class.danger]="getRemainingChars('address', MAX_ADDRESS_LENGTH) === 0">
+                        Caracteres restantes: {{ getRemainingChars('address', MAX_ADDRESS_LENGTH) }}
+                    </div>
                     <div *ngIf="address.invalid && (address.dirty || address.touched || formSubmitted)" 
                         class="error-message">
-                        La dirección es requerida
+                        La dirección es requerida (máx. {{MAX_ADDRESS_LENGTH}} caracteres)
                     </div>
                 </div>
             </div>
@@ -171,7 +207,13 @@
                 <div class="form-group">
                     <label for="observation">Observaciones</label>
                     <textarea id="observation" [(ngModel)]="newSupplier.observation" name="observation" 
-                            rows="2" maxlength="500"></textarea>
+                            rows="2" maxlength="{{MAX_OBSERVATION_LENGTH}}"
+                            (input)="handleInput('observation', MAX_OBSERVATION_LENGTH, $event)"></textarea>
+                    <div class="char-counter"
+                        [class.warning]="getRemainingChars('observation', MAX_OBSERVATION_LENGTH) < 30"
+                        [class.danger]="getRemainingChars('observation', MAX_OBSERVATION_LENGTH) === 0">
+                        Caracteres restantes: {{ getRemainingChars('observation', MAX_OBSERVATION_LENGTH) }}
+                    </div>
                 </div>
             </div>
 

@@ -31,12 +31,13 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    flex-wrap: nowrap; 
+    flex-wrap: nowrap;
 
     h2 {
         margin: 0;
         white-space: nowrap;
-        padding-right: 20px; 
+        padding-right: 20px;
+        color: #333;
     }
 }
 
@@ -44,17 +45,17 @@
     display: flex;
     align-items: center;
     gap: 60px;
-    min-width: 0; 
-    
+    min-width: 0;
+
     app-input-search {
         width: 250px;
-        min-width: 180px; 
-        flex-shrink: 1; 
+        min-width: 180px;
+        flex-shrink: 1;
     }
 
     .add-product-btn {
-        flex-shrink: 0; 
-        white-space: nowrap; 
+        flex-shrink: 0;
+        white-space: nowrap;
     }
 }
 
@@ -85,19 +86,6 @@
     }
 }
 
-.loading-spinner {
-    display: flex;
-    justify-content: center;
-    padding: 50px;
-}
-
-.no-results {
-    text-align: center;
-    padding: 20px;
-    color: #666;
-    font-style: italic;
-}
-
 table {
     width: 100%;
     border-collapse: collapse;
@@ -105,6 +93,7 @@ table {
     margin-top: 20px;
     border-radius: 8px;
     overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 th, td {
@@ -115,43 +104,46 @@ th, td {
 }
 
 th {
-    background: #eee;
+    background: #f8f9fa;
     font-weight: bold;
     color: #6c5ce7;
+    border-bottom: 2px solid #dee2e6;
 }
 
 tr {
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #e9ecef;
 }
 
 tr:hover {
-    background: #f9f9f9;
+    background: #f8f9fa;
 }
 
 .product-image-container {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 10px;
     margin: 0 auto;
     width: fit-content;
 }
 
 .product-img {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
+    width: 40px;
+    height: 40px;
     border-radius: 4px;
+    object-fit: cover;
 }
 
-.no-image {
-    width: 60px;
-    height: 60px;
-    background-color: #f0f0f0;
+.initials {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    background-color: #6c5ce7;
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
-    color: #999;
+    font-weight: bold;
 }
 
 .active {
@@ -179,31 +171,33 @@ tr:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 80px; 
+    min-width: 80px;
     border: none;
-}
+    font-size: 14px;
+    transition: all 0.3s;
 
-.btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
 }
 
 .btn-info {
     background-color: #17a2b8;
     color: white;
-}
 
-.btn-info:hover:not(:disabled) {
-    background-color: #138496;
+    &:hover:not(:disabled) {
+        background-color: #138496;
+    }
 }
 
 .btn-danger {
     background-color: #dc3545;
     color: white;
-}
 
-.btn-danger:hover:not(:disabled) {
-    background-color: #c82333;
+    &:hover:not(:disabled) {
+        background-color: #c82333;
+    }
 }
 
 .pagination-controls {
@@ -222,15 +216,15 @@ tr:hover {
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
-}
 
-.btn-pagination:hover:not(:disabled) {
-    background-color: #4b47c4;
-}
+    &:hover:not(:disabled) {
+        background-color: #4b47c4;
+    }
 
-.btn-pagination:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
+    &:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
 }
 
 .pagination-controls span {
@@ -253,18 +247,13 @@ tr:hover {
 
 .modal-content {
     background-color: white;
-    padding: 2rem 3rem; 
+    padding: 2rem 3rem;
     border-radius: 8px;
     width: 90%;
-    max-width: 700px; 
+    max-width: 700px;
     max-height: 90vh;
     overflow-y: auto;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-
-    h2 {
-        margin-top: 0;
-        color: #333;
-    }
 }
 
 .product-form {
@@ -282,7 +271,7 @@ tr:hover {
 
 .form-group {
     flex: 1;
-    min-width: 0; 
+    min-width: 0;
 
     label {
         display: block;
@@ -306,30 +295,17 @@ tr:hover {
     }
 
     textarea {
+        min-height: 100px;
         resize: vertical;
-        min-height: 80px;
-    }
-}
-
-.expire-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 0.75rem;
-
-    input[type="checkbox"] {
-        width: auto;
-        margin: 0;
     }
 
-    label {
-        margin: 0;
-        font-weight: normal;
+    select option[disabled] {
+        color: #999;
     }
 }
 
 .photo-upload {
-    margin-top: 2rem;
+    margin-top: 1rem;
 
     label {
         display: block;
@@ -339,17 +315,18 @@ tr:hover {
 
 .upload-container {
     display: flex;
-    gap: 2rem; 
-    align-items: center;
+    gap: 2rem;
+    align-items: flex-start;
 }
 
 .image-preview {
     position: relative;
     width: 120px;
     height: 120px;
+    border-radius: 4px;
     overflow: hidden;
     border: 1px solid #ddd;
-    border-radius: 4px;
+    background-color: #f8f9fa;
 
     img {
         width: 100%;
@@ -393,11 +370,15 @@ tr:hover {
     }
 }
 
-.upload-controls small {
-    display: block;
-    margin-top: 0.75rem;
-    color: #6c757d;
-    font-size: 12px;
+.upload-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    small {
+        color: #6c757d;
+        font-size: 12px;
+    }
 }
 
 .modal-actions {
@@ -453,22 +434,27 @@ tr:hover {
     margin-top: 0.5rem;
 }
 
-.char-counter {
-    font-size: 12px;
-    color: #666;
+.character-counter {
     text-align: right;
-
-    &.warning {
-        color: #f0ad4e;
-    }
-
-    &.danger {
-        color: #dc3545;
-    }
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 4px;
 }
 
 .ng-invalid.ng-touched:not(form) {
     border-color: #dc3545 !important;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+
+    input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+    }
 }
 
 @media (max-width: 768px) {
@@ -477,42 +463,42 @@ tr:hover {
         align-items: flex-start;
         gap: 15px;
     }
-    
+
     .header-actions {
         width: 100%;
         flex-wrap: wrap;
         gap: 10px;
     }
-    
+
     .modal-content {
         padding: 1.5rem;
         max-width: 90%;
     }
-    
+
     .form-row {
         flex-direction: column;
         gap: 1rem;
     }
-    
+
     .modal-actions {
         flex-direction: column-reverse;
         gap: 0.75rem;
     }
-    
+
     .btn-submit, .btn-cancel {
         width: 100%;
     }
-    
+
     th, td {
         padding: 8px 4px;
         font-size: 13px;
     }
-    
+
     .btn-actions {
         flex-direction: column;
         gap: 5px;
     }
-    
+
     .btn {
         padding: 6px;
         font-size: 12px;
@@ -529,11 +515,11 @@ tr:hover {
     .container {
         padding: 10px;
     }
-    
+
     .modal-content {
         padding: 1.25rem;
     }
-    
+
     .form-group input,
     .form-group select,
     .form-group textarea {

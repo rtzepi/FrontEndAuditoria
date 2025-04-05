@@ -29,6 +29,13 @@ export class SupplierConfComponent implements OnInit {
   currentSupplierId: number | null = null;
   formSubmitted = false;
 
+  // Definición de constantes para los límites
+  readonly MAX_NAME_LENGTH = 100;
+  readonly MAX_PHONE_LENGTH = 8;
+  readonly MAX_ADDRESS_LENGTH = 100;
+  readonly MAX_OBSERVATION_LENGTH = 300;
+  readonly MAX_EMAIL_LENGTH = 100;
+
   currentPage = 1;
   itemsPerPage = 10;
   searchTerm = '';
@@ -51,7 +58,6 @@ export class SupplierConfComponent implements OnInit {
   };
 
   constructor(private supplierService: SupplierService, private location: Location) {}
-
 
   getStatusText(status: string): string {
     const statusMap: {[key: string]: string} = {
@@ -96,6 +102,22 @@ export class SupplierConfComponent implements OnInit {
     });
   }
 
+  handleInput(field: 'nameSupplier' | 'nameContact' | 'phoneNumber' | 'phoneNumberContact' | 'email' | 'address' | 'observation', 
+              maxLength: number, event: Event) {
+    const input = event.target as HTMLInputElement;
+    const value = input.value;
+    
+    if (value.length > maxLength) {
+      input.value = value.substring(0, maxLength);
+      this.newSupplier[field] = input.value;
+    }
+  }
+
+  getRemainingChars(field: 'nameSupplier' | 'nameContact' | 'phoneNumber' | 'phoneNumberContact' | 'email' | 'address' | 'observation', 
+                   maxLength: number): number {
+    return maxLength - (this.newSupplier[field]?.length || 0);
+  }
+
   validateNumber(event: KeyboardEvent): boolean {
     const charCode = (event.which) ? event.which : event.keyCode;
     if (charCode > 31 && (charCode < 48 || charCode > 57)) {
@@ -109,6 +131,42 @@ export class SupplierConfComponent implements OnInit {
     this.formSubmitted = true;
     
     if (this.supplierForm.invalid) {
+      return;
+    }
+
+    // Validación adicional de longitudes
+    if (this.newSupplier.nameSupplier.length > this.MAX_NAME_LENGTH) {
+      Swal.fire('Error', `El nombre del proveedor no puede exceder ${this.MAX_NAME_LENGTH} caracteres`, 'error');
+      return;
+    }
+
+    if (this.newSupplier.nameContact.length > this.MAX_NAME_LENGTH) {
+      Swal.fire('Error', `El nombre de contacto no puede exceder ${this.MAX_NAME_LENGTH} caracteres`, 'error');
+      return;
+    }
+
+    if (this.newSupplier.phoneNumber.length !== this.MAX_PHONE_LENGTH) {
+      Swal.fire('Error', `El teléfono del proveedor debe tener exactamente ${this.MAX_PHONE_LENGTH} dígitos`, 'error');
+      return;
+    }
+
+    if (this.newSupplier.phoneNumberContact && this.newSupplier.phoneNumberContact.length !== this.MAX_PHONE_LENGTH) {
+      Swal.fire('Error', `El teléfono de contacto debe tener exactamente ${this.MAX_PHONE_LENGTH} dígitos`, 'error');
+      return;
+    }
+
+    if (this.newSupplier.address.length > this.MAX_ADDRESS_LENGTH) {
+      Swal.fire('Error', `La dirección no puede exceder ${this.MAX_ADDRESS_LENGTH} caracteres`, 'error');
+      return;
+    }
+
+    if (this.newSupplier.observation && this.newSupplier.observation.length > this.MAX_OBSERVATION_LENGTH) {
+      Swal.fire('Error', `Las observaciones no pueden exceder ${this.MAX_OBSERVATION_LENGTH} caracteres`, 'error');
+      return;
+    }
+
+    if (this.newSupplier.email.length > this.MAX_EMAIL_LENGTH) {
+      Swal.fire('Error', `El email no puede exceder ${this.MAX_EMAIL_LENGTH} caracteres`, 'error');
       return;
     }
 

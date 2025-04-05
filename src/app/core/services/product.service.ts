@@ -2,96 +2,70 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment.development';
-import { IProduct, IProductResponse } from '../../shared/models/IProduct';
+import { 
+    IProduct, 
+    IProductSingleResponse, 
+    IProductArrayResponse,
+    ICategoryArrayResponse,
+    ISupplierArrayResponse,
+    IUnitOfSaleArrayResponse
+} from '../../shared/models/IProduct';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class ProductService {
-  private readonly apiUrl = `${environment.baseUrlApi}/Product`;
-  private readonly categoryApiUrl = `${environment.baseUrlApi}/Category`;
-  private readonly supplierApiUrl = `${environment.baseUrlApi}/Supplier`;
+    private readonly apiUrl = `${environment.baseUrlApi}/Product`;
 
-  constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient) { }
 
-  getProducts(): Observable<IProductResponse> {
-    return this.http.get<IProductResponse>(`${this.apiUrl}/List`);
+    private prepareProductData(product: IProduct): any {
+      return {
+          idProduct: product.idProduct,
+          nameProduct: product.nameProduct,
+          description: product.description || null,
+          status: product.status,
+          isExpire: product.isExpire,
+          dateExpire: product.dateExpire,
+          imgBase64: product.imgBase64,
+          idImage: product.idImage ? Number(product.idImage) : null,
+          idCategory: product.idCategory ? Number(product.idCategory) : null,
+          idSupplier: product.idSupplier ? Number(product.idSupplier) : null, 
+          idUnitOfSale: product.idUnitOfSale ? Number(product.idUnitOfSale) : null
+      };
   }
+  
+    getProducts(): Observable<IProductArrayResponse> {
+        return this.http.get<IProductArrayResponse>(`${this.apiUrl}/List`);
+    }
 
-  getCategories(): Observable<any> {
-    return this.http.get(`${this.categoryApiUrl}/List`);
-  }
+    addProduct(product: IProduct): Observable<IProductSingleResponse> {
+        const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+        const body = this.prepareProductData(product);
+        return this.http.post<IProductSingleResponse>(`${this.apiUrl}/Add`, body, { headers });
+    }
 
-  getSuppliers(): Observable<any> {
-    return this.http.get(`${this.supplierApiUrl}/List`);
-  }
+    updateProduct(id: number, product: IProduct): Observable<IProductSingleResponse> {
+        const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+        const body = this.prepareProductData(product);
+        return this.http.put<IProductSingleResponse>(`${this.apiUrl}/${id}`, body, { headers });
+    }
 
-  addProduct(productData: any): Observable<IProductResponse> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post<IProductResponse>(`${this.apiUrl}/Add`, productData, { headers });
-  }
+    deleteProduct(id: number): Observable<IProductSingleResponse> {
+        return this.http.delete<IProductSingleResponse>(`${this.apiUrl}`, {
+            params: { id: id.toString() }
+        });
+    }
 
-  updateProduct(id: number, productData: any): Observable<IProductResponse> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.put<IProductResponse>(`${this.apiUrl}/${id}`, productData, { headers });
-  }
+    getCategories(): Observable<ICategoryArrayResponse> {
+        return this.http.get<ICategoryArrayResponse>(`${environment.baseUrlApi}/CategoryProduct/List`);
+    }
 
-  deleteProduct(id: number): Observable<IProductResponse> {
-    return this.http.delete<IProductResponse>(`${this.apiUrl}`, {
-      params: { id: id.toString() }
-    });
-  }
+    getSuppliers(): Observable<ISupplierArrayResponse> {
+        return this.http.get<ISupplierArrayResponse>(`${environment.baseUrlApi}/Supplier/List`);
+    }
+
+    getUnitsOfSale(): Observable<IUnitOfSaleArrayResponse> {
+        return this.http.get<IUnitOfSaleArrayResponse>(`${environment.baseUrlApi}/UnityOfSale/List`);
+    }
 }
-
-
-
-
-
-
-
-
-
-// import { Injectable } from '@angular/core';
-// import { HttpClient, HttpHeaders } from '@angular/common/http';
-// import { Observable } from 'rxjs';
-// import { environment } from '../../environments/environment.development';
-// import { IProduct, IProductResponse, ICategory, ISupplier } from '../../shared/models/IProduct';
-
-// @Injectable({
-//   providedIn: 'root'
-// })
-// export class ProductService {
-//   private readonly apiUrl = `${environment.baseUrlApi}/Product`;
-//   private readonly categoryApiUrl = `${environment.baseUrlApi}/Category`;
-//   private readonly supplierApiUrl = `${environment.baseUrlApi}/Supplier`;
-
-//   constructor(private http: HttpClient) { }
-
-//   getProducts(): Observable<IProductResponse> {
-//     return this.http.get<IProductResponse>(`${this.apiUrl}/List`);
-//   }
-
-//   getCategories(): Observable<any> {
-//     return this.http.get(`${this.categoryApiUrl}/List`);
-//   }
-
-//   getSuppliers(): Observable<any> {
-//     return this.http.get(`${this.supplierApiUrl}/List`);
-//   }
-
-//   addProduct(productData: any): Observable<IProductResponse> {
-//     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-//     return this.http.post<IProductResponse>(`${this.apiUrl}/Add`, productData, { headers });
-//   }
-
-//   updateProduct(id: number, productData: any): Observable<IProductResponse> {
-//     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-//     return this.http.put<IProductResponse>(`${this.apiUrl}/${id}`, productData, { headers });
-//   }
-
-//   deleteProduct(id: number): Observable<IProductResponse> {
-//     return this.http.delete<IProductResponse>(`${this.apiUrl}`, {
-//       params: { id: id.toString() }
-//     });
-//   }
-// }
