@@ -6,7 +6,7 @@ export interface ISupplier {
     phoneNumberContact: string;
     email: string;
     address: string;
-    status: string; // Mantenido como string para 'st'
+    status: string;
     observation: string;
     created_at: string;
     updated_at: string;

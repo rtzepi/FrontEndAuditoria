@@ -1,4 +1,3 @@
-// shared/models/IProfile.ts
 export interface IProfile {
     picture?: string;
     idEmployee?: number;

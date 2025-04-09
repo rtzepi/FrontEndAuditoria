@@ -55,11 +55,11 @@ export interface IProduct {
     isExpire: boolean;
     dateExpire: string | null;
     idImage: number; 
-    image?: IProduct | null;
+    image?: IProductImage | null;
     imgBase64: string | null;
-    idCategory: number; 
+    idCategory: number | null; 
     category: ICategory | null;
-    idSupplier: number; 
+    idSupplier: number | null; 
     supplier: ISupplier | null;
     idUnitOfSale: number | null;
     unitOfSale: IUnitOfSale | null;

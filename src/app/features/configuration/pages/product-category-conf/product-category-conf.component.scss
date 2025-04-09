@@ -1,9 +1,7 @@
-// Variables básicas (defínelas al inicio del archivo)
-$primary-color: #6c5ce7;  // Color morado
-$error-color: #ef4444;    // Color rojo para errores
-$text-color: #333;        // Color de texto principal
+$primary-color: #6c5ce7;
+$error-color: #ef4444;
+$text-color: #333;       
 
-/* Estructura principal */
 .container {
     padding: 20px;
     overflow-x: hidden;
@@ -22,7 +20,7 @@ $text-color: #333;        // Color de texto principal
     }
 }
 
-/* Botones */
+
 .btn-primary {
     background-color: $primary-color;
     color: white;
@@ -32,13 +30,13 @@ $text-color: #333;        // Color de texto principal
     }
 }
 
-/* Mensajes de error */
+
 .error-message {
     color: $error-color;
     font-size: 12px;
 }
 
-/* Resto de tus estilos... */
+
 .header-actions {
     display: flex;
     align-items: center;

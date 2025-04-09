@@ -12,7 +12,8 @@
                 placeholder="Buscar productos..."
                 (searchChange)="handleSearch($event)">
             </app-input-search>
-            <button (click)="openAddProductModal()" class="btn btn-primary add-product-btn" [disabled]="isLoading">
+            <button (click)="openAddProductModal()" class="btn btn-primary add-product-btn" 
+                [disabled]="isLoading || isReadOnly">
                 <span class="material-icons">add</span>
             </button>
         </div>
@@ -27,6 +28,8 @@
                 <th>Descripción</th>
                 <th>Categoría</th>
                 <th>Proveedor</th>
+                <th>Unidad de Medida</th>
+                <th>Fecha Vencimiento</th>
                 <th>Estado</th>
                 <th>Acciones</th>
             </tr>
@@ -40,22 +43,26 @@
                             [src]="product.picture"
                             class="product-img" alt="Imagen producto">
                         <div *ngIf="!product.picture" class="initials">
-                            {{ product.nameProduct}}
+                            {{ product.nameProduct | slice:0:2 | uppercase }}
                         </div>
                     </div>
                 </td>
                 <td>{{ product.nameProduct }}</td>
                 <td>{{ product.description || 'N/A' }}</td>
-                <td>{{ product.category?.categoryName || 'N/A' }}</td>
-                <td>{{ product.supplier?.nameSupplier || 'N/A' }}</td>
+                <td>{{ getCategoryName(product.idCategory) }}</td>
+                <td>{{ getSupplierName(product.idSupplier) }}</td>
+                <td>{{ getUnitOfSaleName(product.idUnitOfSale) }}</td>
+                <td>{{ product.isExpire ? formatDate(product.dateExpire) : 'N/A' }}</td>
                 <td>
-                    <span [class.active]="product.status === 's'" [class.inactive]="product.status !== 's'">
-                        {{ product.status === 's' ? 'Activo' : 'Inactivo' }}
+                    <span [class.active]="product.status === 'E'" [class.inactive]="product.status !== 'E'">
+                        {{ product.status === 'E' ? 'Activo' : 'Inactivo' }}
                     </span>
                 </td>
                 <td class="btn-actions">
-                    <button class="btn btn-info" (click)="openEditProductModal(product)" [disabled]="isLoading">Editar</button>
-                    <button class="btn btn-danger" (click)="confirmDelete(product)" [disabled]="isLoading"> Eliminar</button>
+                    <button class="btn btn-info" (click)="openEditProductModal(product)" 
+                        [disabled]="isLoading || isReadOnly">Editar</button>
+                    <button class="btn btn-danger" (click)="confirmDelete(product)" 
+                        [disabled]="isLoading || isReadOnly">Eliminar</button>
                 </td>
             </tr>
         </tbody>
@@ -82,7 +89,8 @@
                     <label>Nombre del Producto <span class="required">*</span></label>
                     <input type="text" [(ngModel)]="newProduct.nameProduct" name="nameProduct" 
                         required maxlength="50" #nameProduct="ngModel"
-                        (input)="validateNameProduct()">
+                        (input)="validateNameProduct()"
+                        [readonly]="isReadOnly">
                     <div *ngIf="nameProduct.invalid && (nameProduct.dirty || nameProduct.touched)" class="error-message">
                         <span *ngIf="nameProduct.errors?.['required']">Nombre del producto es requerido</span>
                         <span *ngIf="nameProduct.errors?.['maxlength']">Máximo 50 caracteres</span>
@@ -94,9 +102,11 @@
                 
                 <div class="form-group">
                     <label>Estado <span class="required">*</span></label>
-                    <select [(ngModel)]="newProduct.status" name="status" required #status="ngModel">
-                        <option value="s">Activo</option>
-                        <option value="n">Inactivo</option>
+                    <select [(ngModel)]="newProduct.status" name="status" required #status="ngModel" 
+                        [disabled]="isEditing || isReadOnly">
+                        <option value="">Seleccione un estado</option>
+                        <option value="E">Activo</option>
+                        <option value="D">Inactivo</option>
                     </select>
                     <div *ngIf="status.invalid && (status.dirty || status.touched)" class="error-message">
                         Estado es requerido
@@ -107,9 +117,10 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>Categoría <span class="required">*</span></label>
-                    <select [(ngModel)]="newProduct.idCategory" name="idCategory" required #idCategory="ngModel">
-                        <option [value]="null">Seleccione una categoría</option>
-                        <option *ngFor="let category of categories" [value]="category.idCategory">
+                    <select [(ngModel)]="newProduct.idCategory" name="idCategory" required #idCategory="ngModel"
+                        [disabled]="isReadOnly">
+                        <option [ngValue]="null">Seleccione una categoría</option>
+                        <option *ngFor="let category of categories" [ngValue]="category.idCategory">
                             {{ category.categoryName }}
                         </option>
                     </select>
@@ -120,9 +131,10 @@
                 
                 <div class="form-group">
                     <label>Proveedor <span class="required">*</span></label>
-                    <select [(ngModel)]="newProduct.idSupplier" name="idSupplier" required #idSupplier="ngModel">
-                        <option [value]="null">Seleccione un proveedor</option>
-                        <option *ngFor="let supplier of suppliers" [value]="supplier.idSupplier">
+                    <select [(ngModel)]="newProduct.idSupplier" name="idSupplier" required #idSupplier="ngModel"
+                        [disabled]="isReadOnly">
+                        <option [ngValue]="null">Seleccione un proveedor</option>
+                        <option *ngFor="let supplier of suppliers" [ngValue]="supplier.idSupplier">
                             {{ supplier.nameSupplier }}
                         </option>
                     </select>
@@ -135,9 +147,10 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>Unidad de Medida</label>
-                    <select [(ngModel)]="newProduct.idUnitOfSale" name="idUnitOfSale">
-                        <option [value]="null">Seleccione una unidad</option>
-                        <option *ngFor="let unit of unitsOfSale" [value]="unit.idUnitOfSale">
+                    <select [(ngModel)]="newProduct.idUnitOfSale" name="idUnitOfSale"
+                        [disabled]="isReadOnly">
+                        <option [ngValue]="null">Seleccione una unidad</option>
+                        <option *ngFor="let unit of unitsOfSale" [ngValue]="unit.idUnitOfSale">
                             {{ unit.unityName }} ({{ unit.abbreviation }})
                         </option>
                     </select>
@@ -146,7 +159,8 @@
                 <div class="form-group">
                     <label>¿Tiene fecha de expiración?</label>
                     <div class="checkbox-container">
-                        <input type="checkbox" [(ngModel)]="newProduct.isExpire" name="isExpire">
+                        <input type="checkbox" [(ngModel)]="newProduct.isExpire" name="isExpire"
+                            [disabled]="isReadOnly">
                         <span>Sí</span>
                     </div>
                 </div>
@@ -155,20 +169,20 @@
             <div class="form-row" *ngIf="newProduct.isExpire">
                 <div class="form-group">
                     <label>Fecha de Expiración</label>
-                    <input type="date" [(ngModel)]="newProduct.dateExpire" name="dateExpire">
+                    <input type="date" [(ngModel)]="newProduct.dateExpire" name="dateExpire"
+                        [disabled]="isReadOnly">
                 </div>
             </div>
 
             <div class="form-group">
-                <label>Descripción</label>
+                <label>Descripción <span class="required">*</span></label>
                 <textarea [(ngModel)]="newProduct.description" name="description" 
-                        maxlength="100" #description="ngModel"
-                        (input)="validateDescription()"></textarea>
-                        <div *ngIf="idSupplier.invalid && (idSupplier.dirty || idSupplier.touched)" class="error-message">
-                            Proveedor es requerido
-                        </div>
-                <div *ngIf="description.errors?.['maxlength']" class="error-message">
-                    Máximo 100 caractereszzz
+                        required maxlength="100" #description="ngModel"
+                        (input)="validateDescription()"
+                        [readonly]="isReadOnly"></textarea>
+                <div *ngIf="description.invalid && (description.dirty || description.touched)" class="error-message">
+                    <span *ngIf="description.errors?.['required']">Descripción es requerida</span>
+                    <span *ngIf="description.errors?.['maxlength']">Máximo 100 caracteres</span>
                 </div>
                 <div class="character-counter">
                     {{ (newProduct.description ? newProduct.description.length : 0) }}/100
@@ -180,19 +194,19 @@
                 <div class="upload-container">
                     <div class="image-preview" *ngIf="imagePreview">
                         <img [src]="imagePreview" alt="Vista previa">
-                        <button type="button" class="btn-remove" (click)="removePhoto()">
+                        <button *ngIf="!isReadOnly" type="button" class="btn-remove" (click)="removePhoto()">
                             <span class="material-icons">close</span>
                         </button>
                     </div>
                     <div class="upload-controls">
                         <input type="file" id="productPhoto" (change)="handleImageUpload($event)" 
-                            accept="image/*" [disabled]="isLoading" hidden>
-                        <label for="productPhoto" class="btn-upload">
+                            accept="image/*" [disabled]="isLoading || isReadOnly" hidden>
+                        <label for="productPhoto" class="btn-upload" *ngIf="!isReadOnly">
                             <span class="material-icons">upload</span>
                             {{ imagePreview ? 'Cambiar imagen' : 'Subir imagen' }}
                         </label>
-                        <small>Tamaño máximo: 2MB (JPEG, PNG, JPG)</small>
-                        <div *ngIf="(formSubmitted || photoTouched) && !newProduct.imgBase64" class="error-message">
+                        <small *ngIf="!isReadOnly">Tamaño máximo: 2MB (JPEG, PNG, JPG)</small>
+                        <div *ngIf="(formSubmitted || photoTouched) && !newProduct.imgBase64 && !isEditing" class="error-message">
                             La imagen del producto es obligatoria
                         </div>
                     </div>
@@ -200,16 +214,16 @@
             </div>
 
             <div class="modal-actions">
-                <button type="submit" 
+                <button *ngIf="!isReadOnly" type="submit" 
                         class="btn-submit"
-                        [disabled]="productForm.invalid || isLoading || !newProduct.imgBase64">
+                        [disabled]="productForm.invalid || isLoading || (!newProduct.imgBase64 && !isEditing)">
                     {{ isLoading ? (isEditing ? 'Actualizando...' : 'Guardando...') : (isEditing ? 'Actualizar' : 'Guardar') }}
                 </button>
                 <button type="button" 
                         class="btn-cancel"
                         (click)="closeModal()"
                         [disabled]="isLoading">
-                    Cancelar
+                    {{ isReadOnly ? 'Cerrar' : 'Cancelar' }}
                 </button>
             </div>
         </form>

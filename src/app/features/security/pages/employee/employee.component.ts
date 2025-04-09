@@ -127,6 +127,7 @@ export class EmployeeComponent implements OnInit {
       return;
     }
 
+    // Validación adicional de longitudes
     if (this.newEmployee.firstName.length > this.MAX_NAME_LENGTH) {
       Swal.fire('Error', `El primer nombre no puede exceder ${this.MAX_NAME_LENGTH} caracteres`, 'error');
       return;

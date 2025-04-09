@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, Input } from '@angular/core';
 import { NgForm, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import { ProductService } from '../../../../core/services/product.service';
 import { 
     IProduct, 
+    IProductImage,
     IProductSingleResponse, 
     IProductArrayResponse,
     ICategory,
@@ -28,6 +29,8 @@ import { Location } from '@angular/common';
 })
 export class ProductConfComponent implements OnInit {
     @ViewChild('productForm') productForm!: NgForm;
+    @Input() isReadOnly: boolean = false;
+    
     photoTouched = false;
     showModal = false;
     products: IProduct[] = [];
@@ -38,9 +41,8 @@ export class ProductConfComponent implements OnInit {
     currentProductId: number | null = null;
     formSubmitted = false;
 
-
     readonly MAX_NAME_LENGTH = 50;
-    readonly MAX_DESCRIPTION_LENGTH = 500;
+    readonly MAX_DESCRIPTION_LENGTH = 100;
 
     currentPage = 1;
     itemsPerPage = 10;
@@ -51,19 +53,23 @@ export class ProductConfComponent implements OnInit {
     suppliers: ISupplier[] = [];
     unitsOfSale: IUnitOfSale[] = [];
 
+    categoryMap: { [key: number]: string } = {};
+    supplierMap: { [key: number]: string } = {};
+    unityOfSaleMap: { [key: number]: string } = {};
+
     newProduct: IProduct = {
         idProduct: 0,
         nameProduct: '',
         description: null,
-        status: 's',
+        status: 'E',
         isExpire: false,
         dateExpire: null,
         idImage: 0,
         image: null,
-        imgBase64: '',
-        idCategory: 0,
+        imgBase64: null,
+        idCategory: null,
         category: null,
-        idSupplier: 0, 
+        idSupplier: null,
         supplier: null,
         idUnitOfSale: null,
         unitOfSale: null,
@@ -89,7 +95,26 @@ export class ProductConfComponent implements OnInit {
         this.productService.getProducts().subscribe({
             next: (response) => {
                 if (response.isSuccess && response.value) {
-                    this.products = response.value;
+                    this.products = response.value.map(product => {
+                        if (product.imgBase64) {
+                            product.picture = `${product.imgBase64}`;
+                        } else if (product.image) {
+                            const productImage = product.image as IProductImage;
+                            product.picture = `${productImage.mimeType}${productImage.data}`;
+                        }
+                        
+                        if (product.idCategory && !product.category) {
+                            product.category = this.categories.find(c => c.idCategory === product.idCategory) || null;
+                        }
+                        if (product.idSupplier && !product.supplier) {
+                            product.supplier = this.suppliers.find(s => s.idSupplier === product.idSupplier) || null;
+                        }
+                        if (product.idUnitOfSale && !product.unitOfSale) {
+                            product.unitOfSale = this.unitsOfSale.find(u => u.idUnitOfSale === product.idUnitOfSale) || null;
+                        }
+                        
+                        return product;
+                    });
                     this.filteredProducts = [...this.products];
                 }
                 this.isLoading = false;
@@ -98,11 +123,36 @@ export class ProductConfComponent implements OnInit {
         });
     }
 
+    private formatDateForDisplay(dateString: string | null): string | null {
+        if (!dateString) return null;
+        try {
+            const date = new Date(dateString);
+            // Formato yyyy-MM-dd para el input type="date"
+            return date.toISOString().split('T')[0];
+        } catch {
+            return null;
+        }
+    }
+
+    private formatDateForApi(dateString: string | null): string | null {
+        if (!dateString) return null;
+        try {
+            const date = new Date(dateString);
+            return date.toISOString();
+        } catch {
+            return null;
+        }
+    }
+
     private loadCategories() {
         this.productService.getCategories().subscribe({
             next: (response) => {
                 if (response.isSuccess && response.value) {
                     this.categories = response.value;
+                    this.categoryMap = {};
+                    this.categories.forEach(category => {
+                        this.categoryMap[category.idCategory] = category.categoryName;
+                    });
                 }
             },
             error: (error) => this.handleError('Error al cargar categorías', error)
@@ -114,6 +164,10 @@ export class ProductConfComponent implements OnInit {
             next: (response) => {
                 if (response.isSuccess && response.value) {
                     this.suppliers = response.value;
+                    this.supplierMap = {};
+                    this.suppliers.forEach(supplier => {
+                        this.supplierMap[supplier.idSupplier] = supplier.nameSupplier;
+                    });
                 }
             },
             error: (error) => this.handleError('Error al cargar proveedores', error)
@@ -125,6 +179,10 @@ export class ProductConfComponent implements OnInit {
             next: (response) => {
                 if (response.isSuccess && response.value) {
                     this.unitsOfSale = response.value;
+                    this.unityOfSaleMap = {};
+                    this.unitsOfSale.forEach(unit => {
+                        this.unityOfSaleMap[unit.idUnitOfSale] = `${unit.unityName} (${unit.abbreviation})`;
+                    });
                 }
             },
             error: (error) => this.handleError('Error al cargar unidades de medida', error)
@@ -156,24 +214,22 @@ export class ProductConfComponent implements OnInit {
 
     onSubmit() {
         this.formSubmitted = true;
+        this.photoTouched = true;
         
-        if (!this.newProduct.imgBase64) {
+        if (!this.newProduct.imgBase64 && !this.isEditing) {
             Swal.fire('Error', 'La imagen del producto es requerida', 'error');
-            return;
-        }
-
-        if (this.newProduct.nameProduct.length > this.MAX_NAME_LENGTH) {
-            Swal.fire('Error', `El nombre del producto no puede exceder ${this.MAX_NAME_LENGTH} caracteres`, 'error');
-            return;
-        }
-
-        if (this.newProduct.description && this.newProduct.description.length > this.MAX_DESCRIPTION_LENGTH) {
-            Swal.fire('Error', `La descripción no puede exceder ${this.MAX_DESCRIPTION_LENGTH} caracteres`, 'error');
             return;
         }
 
         if (this.productForm.invalid) {
             return;
+        }
+
+        // Formatear fecha para API antes de enviar
+        if (this.newProduct.isExpire && this.newProduct.dateExpire) {
+            this.newProduct.dateExpire = this.formatDateForApi(this.newProduct.dateExpire);
+        } else {
+            this.newProduct.dateExpire = null;
         }
 
         if (this.isEditing) {
@@ -197,10 +253,36 @@ export class ProductConfComponent implements OnInit {
         this.filteredProducts = this.products.filter(product => 
             (product.nameProduct?.toLowerCase().includes(term)) ||
             (product.description?.toLowerCase()?.includes(term)) ||
-            (product.category?.categoryName?.toLowerCase()?.includes(term)) ||
-            (product.supplier?.nameSupplier?.toLowerCase()?.includes(term)) ||
+            (this.getCategoryName(product.idCategory)?.toLowerCase()?.includes(term)) ||
+            (this.getSupplierName(product.idSupplier)?.toLowerCase()?.includes(term)) ||
+            (this.getUnitOfSaleName(product.idUnitOfSale)?.toLowerCase()?.includes(term)) ||
             (product.idProduct?.toString().includes(term))
         );
+    }
+
+    getCategoryName(idCategory: number | null): string {
+        if (idCategory === null) return 'N/A';
+        return this.categoryMap[idCategory] || 'N/A';
+    }
+
+    getSupplierName(idSupplier: number | null): string {
+        if (idSupplier === null) return 'N/A';
+        return this.supplierMap[idSupplier] || 'N/A';
+    }
+
+    getUnitOfSaleName(idUnitOfSale: number | null): string {
+        if (idUnitOfSale === null) return 'N/A';
+        return this.unityOfSaleMap[idUnitOfSale] || 'N/A';
+    }
+
+    formatDate(dateString: string | null): string {
+        if (!dateString) return 'N/A';
+        try {
+            const date = new Date(dateString);
+            return isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString('es-ES');
+        } catch {
+            return 'N/A';
+        }
     }
 
     get paginatedProducts() {
@@ -232,12 +314,20 @@ export class ProductConfComponent implements OnInit {
         this.currentProductId = product.idProduct;
         
         this.newProduct = { ...product };
-        this.newProduct.imgBase64 = product.imgBase64 ?? product.picture ?? null;
-        this.imagePreview = this.newProduct.imgBase64 ? `${this.newProduct.imgBase64}` : null;
+        this.newProduct.imgBase64 = product.imgBase64 ?? product.picture?.replace(/^data:image\/\w+;base64,/, '') ?? null;
+        this.imagePreview = product.picture || (product.imgBase64 ? `${product.imgBase64}` : null);
+        
+        // Formatear fecha para el input type="date"
+        if (this.newProduct.dateExpire) {
+            this.newProduct.dateExpire = this.formatDateForDisplay(this.newProduct.dateExpire);
+        }
+        
         this.showModal = true;
     }
 
     handleImageUpload(event: Event) {
+        if (this.isReadOnly) return;
+        
         this.photoTouched = true;
         const input = event.target as HTMLInputElement;
         const file = input.files?.[0];
@@ -264,9 +354,11 @@ export class ProductConfComponent implements OnInit {
     }
 
     removePhoto() {
+        if (this.isReadOnly) return;
+        
         this.photoTouched = true;
         this.imagePreview = null;
-        this.newProduct.imgBase64 = '';
+        this.newProduct.imgBase64 = null;
         const fileInput = document.getElementById('productPhoto') as HTMLInputElement;
         if (fileInput) {
             fileInput.value = '';
@@ -278,6 +370,9 @@ export class ProductConfComponent implements OnInit {
         this.productService.addProduct(this.newProduct).subscribe({
             next: (response) => {
                 if (response.isSuccess && response.value) {
+                    if (response.value.imgBase64) {
+                        response.value.picture = `${response.value.imgBase64}`;
+                    }
                     this.products.push(response.value);
                     this.filteredProducts = [...this.products];
                     Swal.fire('Éxito', 'Producto agregado correctamente', 'success');
@@ -302,6 +397,9 @@ export class ProductConfComponent implements OnInit {
             .subscribe({
                 next: (response) => {
                     if (response.isSuccess && response.value) {
+                        if (response.value.imgBase64) {
+                            response.value.picture = `data:image/jpeg;base64,${response.value.imgBase64}`;
+                        }
                         const index = this.products.findIndex(p => p.idProduct === this.currentProductId);
                         if (index !== -1) {
                             this.products[index] = response.value;
@@ -319,6 +417,8 @@ export class ProductConfComponent implements OnInit {
     }
 
     confirmDelete(product: IProduct) {
+        if (this.isReadOnly) return;
+        
         Swal.fire({
             title: '¿Eliminar producto?',
             text: `¿Seguro que deseas eliminar "${product.nameProduct}"?`,
@@ -359,30 +459,30 @@ export class ProductConfComponent implements OnInit {
     }
 
     resetForm() {
-    this.imagePreview = null;
-    this.newProduct = {
-        idProduct: 0,
-        nameProduct: '',
-        description: null,
-        status: 's',
-        isExpire: false,
-        dateExpire: null,
-        idImage: 0,
-        image: null,
-        imgBase64: null,
-        idCategory: 0, 
-        category: null,
-        idSupplier: 0,
-        supplier: null,
-        idUnitOfSale: null,
-        unitOfSale: null,
-        picture: ''
-    };
-    this.isEditing = false;
-    this.currentProductId = null;
-    this.formSubmitted = false;
-    this.newProduct.imgBase64 = '';
-}
+        this.imagePreview = null;
+        this.newProduct = {
+            idProduct: 0,
+            nameProduct: '',
+            description: null,
+            status: 'E',
+            isExpire: false,
+            dateExpire: null,
+            idImage: 0,
+            image: null,
+            imgBase64: null,
+            idCategory: null,
+            category: null,
+            idSupplier: null,
+            supplier: null,
+            idUnitOfSale: null,
+            unitOfSale: null,
+            picture: ''
+        };
+        this.isEditing = false;
+        this.currentProductId = null;
+        this.formSubmitted = false;
+        this.photoTouched = false;
+    }
 
     private handleError(message: string, error: any) {
         console.error('Error completo:', error);
