@@ -74,6 +74,7 @@ export class MainLayoutComponent implements OnInit {
       next: (response: IProfileResponse) => {
         if (response.isSuccess && response.value) {
           this.profileData = response.value;
+          console.log(this.profileData);
         }
       },
       error: (error) => {

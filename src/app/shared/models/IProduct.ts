@@ -53,6 +53,7 @@ export interface IProduct {
     description: string | null;
     status: string;
     isExpire: boolean;
+    stockMin: number;
     dateExpire: string | null;
     idImage: number; 
     image?: IProductImage | null;

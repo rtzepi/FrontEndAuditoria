@@ -1,0 +1,169 @@
+.purchase-container {
+background-color: #f8f9fa;
+padding: 2rem;
+border-radius: 10px;
+max-width: 100%;
+
+h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-section {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+
+    .dropdown-group {
+    display: flex;
+    flex-direction: column;
+
+    label {
+        margin-bottom: 0.3rem;
+        font-weight: 500;
+    }
+
+    select {
+        padding: 0.5rem;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        min-width: 200px;
+    }
+    }
+
+    .cantidad-agregar-group {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+
+    .quantity-group {
+        display: flex;
+        flex-direction: column;
+
+        label {
+        margin-bottom: 0.3rem;
+        font-weight: 500;
+        }
+
+        input {
+        padding: 0.5rem;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        min-width: 120px;
+        }
+    }
+
+    .agregar-btn {
+        height: 38px;
+        background-color: #3730a3;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 0 1rem;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        white-space: nowrap;
+
+        &:hover {
+        background-color: #4f46e5;
+        }
+    }
+    }
+}
+
+.stock-added-container {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+
+    .stock-bajo {
+    background-color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    min-width: 200px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+
+    h3 {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+
+        li {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.3rem 0;
+        }
+    }
+    }
+
+    .productos-agregados {
+    flex-grow: 1;
+    background-color: #f1f1f1;
+    padding: 1rem;
+    border-radius: 8px;
+
+    h3 {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+
+        th,
+        td {
+        text-align: left;
+        padding: 0.6rem;
+        }
+
+        thead {
+        background-color: #e2e8f0;
+        }
+
+        tbody tr:nth-child(even) {
+        background-color: #ffffff;
+        }
+
+        .btn {
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        }
+
+        .quitar-btn {
+        background-color: white;
+        color: #333;
+        border: 1px solid #ccc;
+        margin-right: 0.5rem;
+        }
+
+        .editar-btn {
+        background-color: #3730a3;
+        color: white;
+        }
+    }
+    }
+}
+
+.generar-btn {
+    margin-top: 1.5rem;
+    background-color: #1e3a8a;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:hover {
+    background-color: #3b82f6;
+    }
+}
+}

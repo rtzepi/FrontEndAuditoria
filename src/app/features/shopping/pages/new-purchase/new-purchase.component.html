@@ -1,1 +1,78 @@
-<p>new-purchase works!</p>
+<div class="purchase-container">
+<h2>Orden de Compra</h2>
+
+<div class="form-section">
+    <div class="dropdown-group">
+    <label for="provider">Proveedor:</label>
+    <select id="provider" [(ngModel)]="selectedSupplierId" (change)="onSupplierChange()">
+        <option [ngValue]="null" disabled selected>Seleccione el Proveedor</option>
+        <option *ngFor="let supplier of suppliers" [ngValue]="supplier.idSupplier">
+        {{ supplier.nameSupplier }}
+        </option>
+    </select>
+    </div>
+
+    <div class="dropdown-group">
+    <label for="product">Productos:</label>
+    <select id="product" [(ngModel)]="selectedProductId" [disabled]="!selectedSupplierId">
+        <option [ngValue]="null" disabled selected>Seleccione Producto</option>
+        <option *ngFor="let product of filteredProducts" [ngValue]="product.idProduct">
+        {{ product.nameProduct }}
+        </option>
+    </select>
+    </div>
+
+    <div class="cantidad-agregar-group">
+    <div class="quantity-group">
+        <label for="quantity">Cantidad:</label>
+        <input type="number" id="quantity" [(ngModel)]="quantity" min="1" value="1" />
+    </div>
+    <button class="btn agregar-btn" (click)="addProduct()">Agregar</button>
+    </div>
+</div>
+
+<div class="stock-added-container">
+    <div class="stock-bajo" *ngIf="productosBajoStock.length > 0">
+    <h3>Productos con bajo stock</h3>
+    <ul>
+        <li *ngFor="let producto of productosBajoStock">
+        {{ producto.nameProduct }} <span>(Stock mínimo: {{ producto.minStock }})</span>
+        </li>
+    </ul>
+    </div>
+
+    <div class="productos-agregados">
+    <h3>Productos agregados</h3>
+      <table *ngIf="productosAgregados.length > 0">
+        <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
+            <th>Total</th>
+            <th>Fecha de Orden</th>
+            <th>Acción</th>
+        </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of productosAgregados; let i = index">
+            <td>{{ item.nameProduct }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>Q{{ item.priceBuy | number:'1.2-2' }}</td>
+            <td>Q{{ (item.quantity * item.priceBuy) | number:'1.2-2' }}</td>
+            <td>{{ item.dateAdded | date:'shortDate' }}</td>
+            <td>
+            <button class="btn quitar-btn" (click)="removeProduct(i)">Quitar</button>
+            <button class="btn editar-btn" (click)="editProduct(i)">Editar</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+      <p *ngIf="productosAgregados.length === 0">No hay productos agregados</p>
+    </div>
+</div>
+
+<button class="btn generar-btn" (click)="generateOrder()" [disabled]="productosAgregados.length === 0">
+    Generar Orden de Compra
+</button>
+</div>

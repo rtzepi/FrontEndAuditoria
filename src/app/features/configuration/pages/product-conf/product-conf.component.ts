@@ -64,6 +64,7 @@ export class ProductConfComponent implements OnInit {
         status: 'E',
         isExpire: false,
         dateExpire: null,
+        stockMin: 0,
         idImage: 0,
         image: null,
         imgBase64: null,
@@ -127,7 +128,6 @@ export class ProductConfComponent implements OnInit {
         if (!dateString) return null;
         try {
             const date = new Date(dateString);
-            // Formato yyyy-MM-dd para el input type="date"
             return date.toISOString().split('T')[0];
         } catch {
             return null;
@@ -225,7 +225,6 @@ export class ProductConfComponent implements OnInit {
             return;
         }
 
-        // Formatear fecha para API antes de enviar
         if (this.newProduct.isExpire && this.newProduct.dateExpire) {
             this.newProduct.dateExpire = this.formatDateForApi(this.newProduct.dateExpire);
         } else {
@@ -316,8 +315,7 @@ export class ProductConfComponent implements OnInit {
         this.newProduct = { ...product };
         this.newProduct.imgBase64 = product.imgBase64 ?? product.picture?.replace(/^data:image\/\w+;base64,/, '') ?? null;
         this.imagePreview = product.picture || (product.imgBase64 ? `${product.imgBase64}` : null);
-        
-        // Formatear fecha para el input type="date"
+
         if (this.newProduct.dateExpire) {
             this.newProduct.dateExpire = this.formatDateForDisplay(this.newProduct.dateExpire);
         }
@@ -466,6 +464,7 @@ export class ProductConfComponent implements OnInit {
             description: null,
             status: 'E',
             isExpire: false,
+            stockMin: 0,
             dateExpire: null,
             idImage: 0,
             image: null,
