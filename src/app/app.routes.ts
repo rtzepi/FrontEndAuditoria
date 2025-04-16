@@ -52,6 +52,10 @@ export const routes: Routes = [
       {
         path:'security',
         loadChildren: () => import('./features/security/security.routes').then(m => m.SECURITY_ROUTES)
+      },
+      {
+        path:'cash',
+        loadChildren: () => import('./features/cash/cash.routes').then(m => m.CASH_ROUTES)
       }
     ]
   },

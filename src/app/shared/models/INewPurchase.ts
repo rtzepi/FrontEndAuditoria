@@ -1,18 +1,55 @@
+export interface ISupplier {
+    idSupplier: number;
+    nameSupplier: string;
+    nameContact: string;
+    phoneNumber: string;
+    phoneNumberContact: string;
+    email: string;
+    address: string;
+    status: string;
+    observation: string;
+    created_at: string;
+    updated_at: string;
+    created_by: number;
+    deleted_at: string | null;
+}
+
+export interface IProduct {
+    idProduct: number;
+    nameProduct: string;
+    description: string | null;
+    status: string;
+    isExpire: boolean;
+    stockMin: number;
+    dateExpire: string | null;
+    idSupplier: number | null;
+    supplier: ISupplier | null;
+}
+
 export interface IOrder {
     idOrder: number;
     idSupplier: number;
-    products: IOrderDetail[];
     status: string;
     description: string;
+    totalAmount?: number;
     created_at?: string;
+    updated_at?: string;
+    created_by?: number;
+    deleted_at?: string | null;
+    orderDetails?: IOrderDetail[];
+    supplier?: ISupplier;
 }
 
 export interface IOrderDetail {
     idOrderDetail: number;
     idProduct: number;
     priceBuy: number;
+    salePrice?: number;
     quantity: number;
     idOrder: number;
+    expireProduct?: string | null;
+    observation?: string | null;
+    product?: IProduct;
 }
 
 export interface IOrderRequest {
@@ -24,6 +61,40 @@ export interface IOrderRequest {
     }[];
     status: string;
     description: string;
+    totalAmount?: number;
+}
+
+export interface IOrderUpdateRequest {
+    idSupplier: number;
+    products: {
+        idOrderDetail?: number;
+        idProduct: number;
+        priceBuy: number;
+        quantity: number;
+        idOrder: number;
+    }[];
+    status: string;
+    description: string;
+    totalAmount?: number;
+}
+
+export interface IOrderReceiveRequest {
+    products: {
+        idOrderDetail: number;
+        idProduct: number;
+        priceBuy: number;
+        salePrice: number;
+        quantity: number;
+        idOrder: number;
+        expireProduct?: string;
+        observation?: string;
+    }[];
+    description?: string;
+}
+
+export interface IOrderStatusRequest {
+    status: string;
+    description?: string;
 }
 
 export interface IOrderResponse {
@@ -43,7 +114,11 @@ export interface IProductOrder {
     nameProduct: string;
     quantity: number;
     priceBuy: number;
+    salePrice?: number;
     dateAdded?: string;
+    idOrderDetail?: number;
+    expireProduct?: string;
+    observation?: string;
 }
 
 export interface ILowStockProduct {
@@ -51,4 +126,16 @@ export interface ILowStockProduct {
     nameProduct: string;
     currentStock: number;
     minStock: number;
+}
+
+export interface ISupplierResponse {
+    isSuccess: boolean;
+    value: ISupplier | ISupplier[];
+    error?: string | null;
+}
+
+export interface IProductResponse {
+    isSuccess: boolean;
+    value: IProduct | IProduct[];
+    error?: string | null;
 }

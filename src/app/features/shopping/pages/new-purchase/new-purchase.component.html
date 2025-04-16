@@ -1,78 +1,220 @@
-<div class="purchase-container">
-<h2>Orden de Compra</h2>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
-<div class="form-section">
-    <div class="dropdown-group">
-    <label for="provider">Proveedor:</label>
-    <select id="provider" [(ngModel)]="selectedSupplierId" (change)="onSupplierChange()">
-        <option [ngValue]="null" disabled selected>Seleccione el Proveedor</option>
-        <option *ngFor="let supplier of suppliers" [ngValue]="supplier.idSupplier">
-        {{ supplier.nameSupplier }}
-        </option>
-    </select>
+<div class="container">
+    <button class="btn-back" (click)="goBack()">
+        <span class="material-icons">arrow_back</span>
+        Volver
+    </button>
+    
+    <div class="header">
+        <h2>Órdenes de Compra</h2>
+        <div class="header-actions">
+            <app-input-search 
+                [placeholder]="'Buscar órdenes...'" 
+                (searchChange)="handleSearch($event)">
+            </app-input-search>
+            <button (click)="openAddOrderModal()" class="btn add-btn" [disabled]="isLoading">
+                <span class="material-icons">add</span>
+            </button>
+        </div>
     </div>
 
-    <div class="dropdown-group">
-    <label for="product">Productos:</label>
-    <select id="product" [(ngModel)]="selectedProductId" [disabled]="!selectedSupplierId">
-        <option [ngValue]="null" disabled selected>Seleccione Producto</option>
-        <option *ngFor="let product of filteredProducts" [ngValue]="product.idProduct">
-        {{ product.nameProduct }}
-        </option>
-    </select>
+    <div *ngIf="isLoading && orders.length === 0" class="loading-spinner">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
     </div>
 
-    <div class="cantidad-agregar-group">
-    <div class="quantity-group">
-        <label for="quantity">Cantidad:</label>
-        <input type="number" id="quantity" [(ngModel)]="quantity" min="1" value="1" />
-    </div>
-    <button class="btn agregar-btn" (click)="addProduct()">Agregar</button>
-    </div>
-</div>
-
-<div class="stock-added-container">
-    <div class="stock-bajo" *ngIf="productosBajoStock.length > 0">
-    <h3>Productos con bajo stock</h3>
-    <ul>
-        <li *ngFor="let producto of productosBajoStock">
-        {{ producto.nameProduct }} <span>(Stock mínimo: {{ producto.minStock }})</span>
-        </li>
-    </ul>
+    <div *ngIf="!isLoading && filteredOrders.length === 0" class="no-results">
+        No se encontraron órdenes de compra
     </div>
 
-    <div class="productos-agregados">
-    <h3>Productos agregados</h3>
-      <table *ngIf="productosAgregados.length > 0">
+    <table *ngIf="filteredOrders.length > 0">
         <thead>
-        <tr>
-            <th>Producto</th>
-            <th>Cantidad</th>
-            <th>Precio Unitario</th>
-            <th>Total</th>
-            <th>Fecha de Orden</th>
-            <th>Acción</th>
-        </tr>
+            <tr>
+                <th>ID</th>
+                <th>Proveedor</th>
+                <th>Fecha</th>
+                <th>Productos</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of productosAgregados; let i = index">
-            <td>{{ item.nameProduct }}</td>
-            <td>{{ item.quantity }}</td>
-            <td>Q{{ item.priceBuy | number:'1.2-2' }}</td>
-            <td>Q{{ (item.quantity * item.priceBuy) | number:'1.2-2' }}</td>
-            <td>{{ item.dateAdded | date:'shortDate' }}</td>
-            <td>
-            <button class="btn quitar-btn" (click)="removeProduct(i)">Quitar</button>
-            <button class="btn editar-btn" (click)="editProduct(i)">Editar</button>
-            </td>
-        </tr>
+            <tr *ngFor="let order of paginatedOrders">
+                <td class="text-center">{{ order.idOrder }}</td>
+                <td class="text-center">{{ getSupplierName(order.idSupplier) }}</td>
+                <td class="text-center">{{ order.created_at | date:'shortDate' }}</td>
+                <td class="text-center">{{ getProductsCount(order) }}</td>
+                <td class="text-center">Q{{ getOrderTotal(order) | number:'1.2-2' }}</td>
+                <td class="text-center">
+                    <span [class]="getStatusClass(order.status)">
+                        {{ getStatusText(order.status) }}
+                    </span>
+                </td>
+                <td class="btn-actions text-center">
+                    <button class="btn btn-info" (click)="openEditOrderModal(order)" 
+                        [disabled]="isLoading || order.status === 'V' || order.status === 'C' || order.status === 'R'">
+                        Editar
+                    </button>
+                    <button class="btn btn-secondary" (click)="downloadPdf(order.idOrder)" [disabled]="isLoading">
+                        PDF
+                    </button>
+                    <button class="btn btn-status" (click)="openStatusModal(order)" [disabled]="isLoading">
+                        Estados
+                    </button>
+                </td>
+            </tr>
         </tbody>
     </table>
-      <p *ngIf="productosAgregados.length === 0">No hay productos agregados</p>
+
+    <div class="pagination-controls" *ngIf="filteredOrders.length > itemsPerPage">
+        <button (click)="previousPage()" [disabled]="currentPage === 1" class="btn-pagination">
+            Anterior
+        </button>
+        <span>Página {{currentPage}} de {{totalPages}}</span>
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages" class="btn-pagination">
+            Siguiente
+        </button>
     </div>
 </div>
 
-<button class="btn generar-btn" (click)="generateOrder()" [disabled]="productosAgregados.length === 0">
-    Generar Orden de Compra
-</button>
+<div *ngIf="showOrderModal" class="modal-overlay">
+    <div class="modal-content purchase-modal">
+        <h2>{{ isEditing ? 'Editar Orden de Compra' : 'Nueva Orden de Compra' }}</h2>
+        
+        <div class="purchase-container">
+            <div class="form-section">
+                <div class="dropdown-group">
+                    <label for="provider">Proveedor:</label>
+                    <select id="provider" [(ngModel)]="selectedSupplierId" (change)="onSupplierChange()" [disabled]="isEditing">
+                        <option [ngValue]="null" disabled selected>Seleccione el Proveedor</option>
+                        <option *ngFor="let supplier of suppliers" [ngValue]="supplier.idSupplier">
+                            {{ supplier.nameSupplier }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="dropdown-group">
+                    <label for="product">Productos:</label>
+                    <select id="product" [(ngModel)]="selectedProductId" [disabled]="!selectedSupplierId">
+                        <option [ngValue]="null" disabled selected>Seleccione Producto</option>
+                        <option *ngFor="let product of filteredProducts" [ngValue]="product.idProduct">
+                            {{ product.nameProduct }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="cantidad-agregar-group">
+                    <div class="quantity-group">
+                        <label for="quantity">Cantidad:</label>
+                        <input type="number" id="quantity" [(ngModel)]="quantity" min="1" value="1" />
+                    </div>
+                    <div class="agregar-btn-container">
+                        <button class="btn agregar-btn" (click)="addProduct()">Agregar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stock-added-container">
+                <div class="stock-bajo" *ngIf="productosBajoStock.length > 0">
+                    <h3>Productos con bajo stock</h3>
+                    <ul>
+                        <li *ngFor="let producto of productosBajoStock">
+                            {{ producto.nameProduct }} <span>(Stock mínimo: {{ producto.minStock }})</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="productos-agregados">
+                    <h3>Productos agregados</h3>
+                    <table *ngIf="productosAgregados.length > 0">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Precio Unitario</th>
+                                <th>Total</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of paginatedProducts; let i = index">
+                                <td>{{ item.nameProduct }}</td>
+                                <td>
+                                    <input type="number" [(ngModel)]="item.quantity" min="1" 
+                                        (change)="updateQuantity(i, item.quantity)">
+                                </td>
+                                <td>
+                                    <input type="number" [(ngModel)]="item.priceBuy" min="0" step="0.01">
+                                </td>
+                                <td>Q{{ (item.quantity * item.priceBuy) | number:'1.2-2' }}</td>
+                                <td>
+                                    <button class="btn quitar-btn" (click)="removeProduct(i)">Quitar</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p *ngIf="productosAgregados.length === 0">No hay productos agregados</p>
+
+                    <div class="pagination-controls" *ngIf="productosAgregados.length > modalItemsPerPage">
+                        <button (click)="previousModalPage()" [disabled]="modalCurrentPage === 1" class="btn-pagination">
+                            Anterior
+                        </button>
+                        <span>Página {{modalCurrentPage}} de {{modalTotalPages}}</span>
+                        <button (click)="nextModalPage()" [disabled]="modalCurrentPage === modalTotalPages" class="btn-pagination">
+                            Siguiente
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button type="button" class="btn-submit" (click)="isEditing ? updateOrder() : generateOrder()" 
+                [disabled]="productosAgregados.length === 0 || !selectedSupplierId || isLoading">
+                {{ isLoading ? (isEditing ? 'Actualizando...' : 'Guardando...') : (isEditing ? 'Actualizar' : 'Guardar') }}
+            </button>
+            <button type="button" class="btn-cancel" (click)="closeOrderModal()" [disabled]="isLoading">
+                Cancelar
+            </button>
+            <button type="button" class="btn-pdf" (click)="generateAndDownloadPdf()" 
+                *ngIf="isEditing && currentOrder" [disabled]="isLoading">
+                Generar PDF
+            </button>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="showStatusModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>Cambiar Estado de la Orden</h2>
+        
+        <div class="form-group">
+            <label for="status">Nuevo Estado:</label>
+            <select id="status" [(ngModel)]="newStatus" class="form-control">
+                <option value="P">Pendiente</option>
+                <option value="V">Confirmada</option>
+                <option value="S">Enviada</option>
+                <option value="R">Recibida</option>
+                <option value="C">Cancelada</option>
+            </select>
+        </div>
+
+        <div class="form-group" *ngIf="newStatus === 'C'">
+            <label for="statusDescription">Motivo de Cancelación ({{remainingChars}} caracteres restantes):</label>
+            <textarea id="statusDescription" [(ngModel)]="statusDescription" 
+                (input)="updateDescription($event)" maxlength="75" class="form-control"></textarea>
+        </div>
+
+        <div class="modal-actions">
+            <button type="button" class="btn-submit" (click)="updateOrderStatus()" [disabled]="isLoading">
+                {{ isLoading ? 'Actualizando...' : 'Actualizar' }}
+            </button>
+            <button type="button" class="btn-cancel" (click)="closeStatusModal()" [disabled]="isLoading">
+                Cancelar
+            </button>
+        </div>
+    </div>
 </div>
