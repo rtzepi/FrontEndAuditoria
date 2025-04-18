@@ -28,28 +28,32 @@ export interface IProduct {
 
 export interface IOrder {
     idOrder: number;
-    idSupplier: number;
-    status: string;
+    dateOrder: string;
     description: string;
-    totalAmount?: number;
+    status: string;
+    totalAmount: number;
+    idSupplier: number;
     created_at?: string;
-    updated_at?: string;
+    updated_at?: string | null;
     created_by?: number;
-    deleted_at?: string | null;
-    orderDetails?: IOrderDetail[];
+    products?: IOrderDetail[];
     supplier?: ISupplier;
 }
 
 export interface IOrderDetail {
     idOrderDetail: number;
     idProduct: number;
-    priceBuy: number;
-    salePrice?: number;
     quantity: number;
+    priceBuy: number;
+    subtotal: number;
     idOrder: number;
-    expireProduct?: string | null;
+    created_at?: string;
+    productName?: string;
+    isExpire?: boolean;
+    stockMin?: number;
+    productDescription?: string | null;
+    status?: string;
     observation?: string | null;
-    product?: IProduct;
 }
 
 export interface IOrderRequest {
@@ -86,8 +90,8 @@ export interface IOrderReceiveRequest {
         salePrice: number;
         quantity: number;
         idOrder: number;
-        expireProduct?: string;
-        observation?: string;
+        expireProduct?: string | null;
+        observation?: string | null;
     }[];
     description?: string;
 }
@@ -115,10 +119,13 @@ export interface IProductOrder {
     quantity: number;
     priceBuy: number;
     salePrice?: number;
-    dateAdded?: string;
     idOrderDetail?: number;
-    expireProduct?: string;
-    observation?: string;
+    subtotal?: number;
+    isExpire?: boolean;
+    stockMin?: number;
+    productDescription?: string | null;
+    observation?: string | null;
+    status?: string;
 }
 
 export interface ILowStockProduct {

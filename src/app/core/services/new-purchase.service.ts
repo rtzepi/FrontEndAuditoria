@@ -10,7 +10,8 @@ import {
     IOrderReceiveRequest,
     IOrderStatusRequest,
     ISupplierResponse,
-    IProductResponse
+    IProductResponse,
+    IOrderDetail
 } from '../../shared/models/INewPurchase';
 
 @Injectable({
@@ -50,7 +51,7 @@ export class NewPurchaseService {
     }
 
     receiveOrder(id: number, receiveRequest: IOrderReceiveRequest): Observable<IOrderResponse> {
-        return this.http.put<IOrderResponse>(`${this.apiUrl}/Order/Receive/${id}`, receiveRequest);
+        return this.http.post<IOrderResponse>(`${this.apiUrl}/Order/Receive/${id}`, receiveRequest);
     }
 
     generatePdf(idOrder: number): Observable<Blob> {

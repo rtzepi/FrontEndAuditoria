@@ -61,8 +61,13 @@
                     <button class="btn btn-secondary" (click)="downloadPdf(order.idOrder)" [disabled]="isLoading">
                         PDF
                     </button>
-                    <button class="btn btn-status" (click)="openStatusModal(order)" [disabled]="isLoading">
+                    <button class="btn btn-status" (click)="openStatusModal(order)" 
+                        [disabled]="isLoading || order.status === 'C' || order.status === 'R'">
                         Estados
+                    </button>
+                    <button class="btn btn-receive" (click)="openReceiveModal(order)" 
+                        [disabled]="isLoading || order.status !== 'V'">
+                        Recibir
                     </button>
                 </td>
             </tr>
@@ -111,9 +116,7 @@
                         <label for="quantity">Cantidad:</label>
                         <input type="number" id="quantity" [(ngModel)]="quantity" min="1" value="1" />
                     </div>
-                    <div class="agregar-btn-container">
-                        <button class="btn agregar-btn" (click)="addProduct()">Agregar</button>
-                    </div>
+                    <button class="btn agregar-btn" (click)="addProduct()">Agregar</button>
                 </div>
             </div>
 
@@ -134,20 +137,26 @@
                             <tr>
                                 <th>Producto</th>
                                 <th>Cantidad</th>
-                                <th>Precio Unitario</th>
+                                <th>Precio Compra</th>
+                                <th>Precio Venta</th>
                                 <th>Total</th>
                                 <th>Acción</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr *ngFor="let item of paginatedProducts; let i = index">
+                            <tr *ngFor="let item of paginatedProductosAgregados; let i = index">
                                 <td>{{ item.nameProduct }}</td>
                                 <td>
                                     <input type="number" [(ngModel)]="item.quantity" min="1" 
                                         (change)="updateQuantity(i, item.quantity)">
                                 </td>
                                 <td>
-                                    <input type="number" [(ngModel)]="item.priceBuy" min="0" step="0.01">
+                                    <input type="number" [(ngModel)]="item.priceBuy" min="0" step="0.01"
+                                        (change)="updatePrice(i, item.priceBuy)">
+                                </td>
+                                <td>
+                                    <input type="number" [(ngModel)]="item.salePrice" min="0" step="0.01"
+                                        (change)="updateSalePrice(i, item.salePrice || 0)">
                                 </td>
                                 <td>Q{{ (item.quantity * item.priceBuy) | number:'1.2-2' }}</td>
                                 <td>
@@ -156,17 +165,16 @@
                             </tr>
                         </tbody>
                     </table>
-                    <p *ngIf="productosAgregados.length === 0">No hay productos agregados</p>
-
-                    <div class="pagination-controls" *ngIf="productosAgregados.length > modalItemsPerPage">
-                        <button (click)="previousModalPage()" [disabled]="modalCurrentPage === 1" class="btn-pagination">
+                    <div class="pagination-controls" *ngIf="productosAgregados.length > receiveItemsPerPage">
+                        <button (click)="previousReceivePage()" [disabled]="currentReceivePage === 1" class="btn-pagination">
                             Anterior
                         </button>
-                        <span>Página {{modalCurrentPage}} de {{modalTotalPages}}</span>
-                        <button (click)="nextModalPage()" [disabled]="modalCurrentPage === modalTotalPages" class="btn-pagination">
+                        <span>Página {{currentReceivePage}} de {{totalReceivePages}}</span>
+                        <button (click)="nextReceivePage()" [disabled]="currentReceivePage === totalReceivePages" class="btn-pagination">
                             Siguiente
                         </button>
                     </div>
+                    <p *ngIf="productosAgregados.length === 0">No hay productos agregados</p>
                 </div>
             </div>
         </div>
@@ -194,18 +202,17 @@
         <div class="form-group">
             <label for="status">Nuevo Estado:</label>
             <select id="status" [(ngModel)]="newStatus" class="form-control">
-                <option value="P">Pendiente</option>
-                <option value="V">Confirmada</option>
-                <option value="S">Enviada</option>
-                <option value="R">Recibida</option>
-                <option value="C">Cancelada</option>
+                <option value="S" *ngIf="currentOrder?.status === 'P'">Enviado</option>
+                <option value="V" *ngIf="currentOrder?.status === 'S'">Confirmado</option>
+                <option value="R" *ngIf="currentOrder?.status === 'V'">Recibido</option>
+                <option value="C">Cancelado</option>
             </select>
         </div>
 
         <div class="form-group" *ngIf="newStatus === 'C'">
-            <label for="statusDescription">Motivo de Cancelación ({{remainingChars}} caracteres restantes):</label>
-            <textarea id="statusDescription" [(ngModel)]="statusDescription" 
-                (input)="updateDescription($event)" maxlength="75" class="form-control"></textarea>
+            <label for="statusDescription">Motivo de Cancelación (máx. 75 caracteres):</label>
+            <textarea id="statusDescription" [(ngModel)]="statusDescription" class="form-control" maxlength="75"></textarea>
+            <small *ngIf="statusDescription">{{ statusDescription.length }}/75 caracteres</small>
         </div>
 
         <div class="modal-actions">
@@ -213,6 +220,73 @@
                 {{ isLoading ? 'Actualizando...' : 'Actualizar' }}
             </button>
             <button type="button" class="btn-cancel" (click)="closeStatusModal()" [disabled]="isLoading">
+                Cancelar
+            </button>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="showReceiveModal" class="modal-overlay">
+    <div class="modal-content receive-modal">
+        <h2>Recibir Orden #{{ currentOrder?.idOrder }}</h2>
+        
+        <div class="form-group">
+            <label for="receiveDescription">Descripción (opcional):</label>
+            <textarea id="receiveDescription" [(ngModel)]="receiveDescription" class="form-control"></textarea>
+        </div>
+
+        <div class="productos-recibir">
+            <h3>Productos a recibir</h3>
+            <table *ngIf="productosAgregados.length > 0">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio Compra</th>
+                        <th>Precio Venta</th>
+                        <th>Total</th>
+                        <th>Observación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of paginatedProductosAgregados; let i = index">
+                        <td>{{ item.nameProduct }}</td>
+                        <td>
+                            <input type="number" [(ngModel)]="item.quantity" min="1" 
+                                (change)="updateQuantity(i, item.quantity)">
+                        </td>
+                        <td>
+                            <input type="number" [(ngModel)]="item.priceBuy" min="0" step="0.01"
+                                (change)="updatePrice(i, item.priceBuy)">
+                        </td>
+                        <td>
+                            <input type="number" [(ngModel)]="item.salePrice" min="0" step="0.01"
+                                (change)="updateSalePrice(i, item.salePrice || 0)">
+                        </td>
+                        <td>Q{{ (item.quantity * item.priceBuy) | number:'1.2-2' }}</td>
+                        <td>
+                            <input type="text" [(ngModel)]="item.observation" 
+                                (change)="updateObservation(i, item.observation || '')" placeholder="Observación">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="pagination-controls" *ngIf="productosAgregados.length > receiveItemsPerPage">
+                <button (click)="previousReceivePage()" [disabled]="currentReceivePage === 1" class="btn-pagination">
+                    Anterior
+                </button>
+                <span>Página {{currentReceivePage}} de {{totalReceivePages}}</span>
+                <button (click)="nextReceivePage()" [disabled]="currentReceivePage === totalReceivePages" class="btn-pagination">
+                    Siguiente
+                </button>
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button type="button" class="btn-submit" (click)="receiveOrder()" [disabled]="isLoading || productosAgregados.length === 0">
+                {{ isLoading ? 'Procesando...' : 'Recibir Orden' }}
+            </button>
+            <button type="button" class="btn-cancel" (click)="closeReceiveModal()" [disabled]="isLoading">
                 Cancelar
             </button>
         </div>

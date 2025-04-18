@@ -1,6 +1,4 @@
 export const environment = {
     production: false,
-    baseUrlApi: 'https://localhost:7124/api',
-    defaultPageSize: 10,
-    dateFormat: 'mediumDate'
+    baseUrlApi: 'https://localhost:7124/api'
 };
