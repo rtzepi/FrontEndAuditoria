@@ -204,7 +204,7 @@
             <select id="status" [(ngModel)]="newStatus" class="form-control">
                 <option value="S" *ngIf="currentOrder?.status === 'P'">Enviado</option>
                 <option value="V" *ngIf="currentOrder?.status === 'S'">Confirmado</option>
-                <option value="R" *ngIf="currentOrder?.status === 'V'">Recibido</option>
+                <!-- <option value="R" *ngIf="currentOrder?.status === 'V'">Recibido</option> -->
                 <option value="C">Cancelado</option>
             </select>
         </div>
