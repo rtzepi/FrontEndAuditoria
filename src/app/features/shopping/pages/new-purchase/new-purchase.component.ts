@@ -1,6 +1,6 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { NewPurchaseService } from '../../../../core/services/new-purchase.service';
 import { 
     IOrder,
@@ -35,6 +35,8 @@ import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
   styleUrls: ['./new-purchase.component.scss']
 })
 export class NewPurchaseComponent implements OnInit {
+  @ViewChild('orderForm') orderForm?: NgForm;
+  
   showOrderModal = false;
   showStatusModal = false;
   showReceiveModal = false;
@@ -43,6 +45,7 @@ export class NewPurchaseComponent implements OnInit {
   isLoading = false;
   isEditing = false;
   currentOrder: IOrder | null = null;
+  orderDescription = '';
 
   suppliers: ISupplier[] = [];
   products: IProduct[] = [];
@@ -78,6 +81,22 @@ export class NewPurchaseComponent implements OnInit {
   ngOnInit() {
     this.loadData();
     this.setupSearch();
+  }
+
+  isOrderFormValid(): boolean {
+    return !!this.selectedSupplierId && this.productosAgregados.length > 0;
+  }
+
+  isReceiveFormValid(): boolean {
+    if (!this.receiveDescription || this.productosAgregados.length === 0) {
+      return false;
+    }
+
+    return this.productosAgregados.every(item => 
+      item.quantity > 0 && 
+      item.priceBuy > 0 &&
+      item.salePrice > 0
+    );
   }
 
   private loadData() {
@@ -130,10 +149,10 @@ export class NewPurchaseComponent implements OnInit {
   private loadOrderProducts(orderId: number) {
     this.purchaseService.getOrderById(orderId).subscribe({
       next: (response: IOrderResponse) => {
-        if (response.isSuccess && response.value && response.value.products) {
+        if (response.isSuccess && response.value) {
           const orderIndex = this.orders.findIndex(o => o.idOrder === orderId);
           if (orderIndex !== -1) {
-            this.orders[orderIndex].products = response.value.products;
+            this.orders[orderIndex].products = response.value.products || [];
             this.filteredOrders = [...this.orders];
           }
         }
@@ -210,6 +229,10 @@ export class NewPurchaseComponent implements OnInit {
     }
   }
 
+  getRemainingChars(text: string | null | undefined, maxLength: number): number {
+    return maxLength - (text?.length || 0);
+  }
+
   get paginatedOrders() {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     return this.filteredOrders.slice(startIndex, startIndex + this.itemsPerPage);
@@ -255,6 +278,7 @@ export class NewPurchaseComponent implements OnInit {
     this.isEditing = true;
     this.currentOrder = order;
     this.selectedSupplierId = order.idSupplier;
+    this.orderDescription = order.description || '';
     
     this.purchaseService.getOrderById(order.idOrder).subscribe({
       next: (response: IOrderResponse) => {
@@ -265,13 +289,13 @@ export class NewPurchaseComponent implements OnInit {
             nameProduct: detail.productName || this.getProductById(detail.idProduct)?.nameProduct || 'Producto desconocido',
             quantity: detail.quantity,
             priceBuy: detail.priceBuy,
-            salePrice: 0,
+            salePrice: 0, // No mostramos precio de venta en edición
             idOrderDetail: detail.idOrderDetail,
             subtotal: detail.subtotal,
-            isExpire: detail.isExpire,
-            stockMin: detail.stockMin,
+            isExpire: detail.isExpire || false,
+            stockMin: detail.stockMin || 0,
             productDescription: detail.productDescription,
-            status: detail.status
+            status: detail.status || 'A'
           }));
           this.onSupplierChange();
           this.cdr.detectChanges();
@@ -285,10 +309,10 @@ export class NewPurchaseComponent implements OnInit {
 
   openStatusModal(order: IOrder) {
     this.currentOrder = order;
-    this.newStatus = order.status;
+    this.newStatus = '';
     this.statusDescription = '';
     this.showStatusModal = true;
-}
+  }
 
   openReceiveModal(order: IOrder) {
     if (order.status !== 'V') {
@@ -308,13 +332,14 @@ export class NewPurchaseComponent implements OnInit {
             nameProduct: detail.productName || this.getProductById(detail.idProduct)?.nameProduct || 'Producto desconocido',
             quantity: detail.quantity,
             priceBuy: detail.priceBuy,
-            salePrice: 0,
+            salePrice: detail.priceBuy * 1.2, // 20% de margen por defecto por si se le olvida al empleado colocar un precio de venta
             idOrderDetail: detail.idOrderDetail,
             subtotal: detail.subtotal,
-            isExpire: detail.isExpire,
-            stockMin: detail.stockMin,
+            isExpire: detail.isExpire || false,
+            stockMin: detail.stockMin || 0,
             productDescription: detail.productDescription,
-            status: detail.status
+            status: detail.status || 'A',
+            observation: detail.observation || ''
           }));
           this.showReceiveModal = true;
           this.cdr.detectChanges();
@@ -387,11 +412,11 @@ export class NewPurchaseComponent implements OnInit {
         idProduct: product.idProduct,
         nameProduct: product.nameProduct || 'Sin nombre',
         quantity: this.quantity,
-        priceBuy: 0,
-        salePrice: 0,
-        isExpire: product.isExpire,
-        stockMin: product.stockMin,
-        productDescription: product.description
+        priceBuy: product.priceBuy || 0,
+        salePrice: 0, // No requerido en creación/edición
+        isExpire: product.isExpire || false,
+        stockMin: product.stockMin || 0,
+        productDescription: product.description || null
       });
     }
 
@@ -442,7 +467,7 @@ export class NewPurchaseComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  generateOrder(): void {
+  validateAndSubmitOrder(): void {
     if (!this.selectedSupplierId) {
       Swal.fire('Error', 'Seleccione un proveedor', 'error');
       return;
@@ -453,17 +478,34 @@ export class NewPurchaseComponent implements OnInit {
       return;
     }
 
+    const invalidProducts = this.productosAgregados.filter(
+      item => item.priceBuy <= 0 || isNaN(item.priceBuy)
+    );
+    
+    if (invalidProducts.length > 0) {
+      Swal.fire('Error', 'Todos los productos deben tener un precio de compra válido', 'error');
+      return;
+    }
+
     const totalAmount = this.productosAgregados.reduce((total, item) => total + (item.priceBuy * item.quantity), 0);
 
+    if (this.isEditing) {
+      this.updateOrder(totalAmount);
+    } else {
+      this.generateOrder(totalAmount);
+    }
+  }
+
+  generateOrder(totalAmount: number): void {
     const order: IOrderRequest = {
-      idSupplier: this.selectedSupplierId,
+      idSupplier: this.selectedSupplierId!,
       products: this.productosAgregados.map(item => ({
         idProduct: item.idProduct,
         quantity: item.quantity,
         priceBuy: item.priceBuy
       })),
       status: 'P',
-      description: `Orden generada el ${new Date().toLocaleDateString()}`,
+      description: this.orderDescription || `Orden generada el ${new Date().toLocaleDateString()}`,
       totalAmount: totalAmount
     };
 
@@ -471,7 +513,13 @@ export class NewPurchaseComponent implements OnInit {
     this.purchaseService.createOrder(order).subscribe({
       next: (response) => {
         if (response.isSuccess && response.value) {
-          Swal.fire('Éxito', 'Orden creada correctamente', 'success');
+          Swal.fire({
+            title: 'Éxito',
+            text: 'Orden creada correctamente',
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+          });
           this.closeOrderModal();
           this.loadData();
         } else {
@@ -483,21 +531,9 @@ export class NewPurchaseComponent implements OnInit {
     });
   }
 
-  updateOrder(): void {
-    if (!this.currentOrder || !this.selectedSupplierId) {
-      Swal.fire('Error', 'Datos de orden incompletos', 'error');
-      return;
-    }
-
-    if (this.productosAgregados.length === 0) {
-      Swal.fire('Error', 'La orden debe tener al menos un producto', 'error');
-      return;
-    }
-
-    const totalAmount = this.productosAgregados.reduce((total, item) => total + (item.priceBuy * item.quantity), 0);
-
+  updateOrder(totalAmount: number): void {
     const order: IOrderUpdateRequest = {
-      idSupplier: this.selectedSupplierId,
+      idSupplier: this.selectedSupplierId!,
       products: this.productosAgregados.map(item => ({
         idOrderDetail: item.idOrderDetail,
         idProduct: item.idProduct,
@@ -505,16 +541,22 @@ export class NewPurchaseComponent implements OnInit {
         priceBuy: item.priceBuy,
         idOrder: this.currentOrder!.idOrder
       })),
-      status: this.currentOrder.status,
-      description: this.currentOrder.description || `Orden actualizada el ${new Date().toLocaleDateString()}`,
+      status: this.currentOrder!.status,
+      description: this.orderDescription || `Orden actualizada el ${new Date().toLocaleDateString()}`,
       totalAmount: totalAmount
     };
 
     this.isLoading = true;
-    this.purchaseService.updateOrder(this.currentOrder.idOrder, order).subscribe({
+    this.purchaseService.updateOrder(this.currentOrder!.idOrder, order).subscribe({
       next: (response) => {
         if (response.isSuccess && response.value) {
-          Swal.fire('Éxito', 'Orden actualizada correctamente', 'success');
+          Swal.fire({
+            title: 'Éxito',
+            text: 'Orden actualizada correctamente',
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+          });
           this.closeOrderModal();
           this.loadData();
         } else {
@@ -526,102 +568,131 @@ export class NewPurchaseComponent implements OnInit {
     });
   }
 
+  validateAndUpdateStatus(): void {
+    if (!this.newStatus) {
+      Swal.fire('Error', 'Seleccione un estado', 'error');
+      return;
+    }
+
+    if (this.newStatus === 'C' && (!this.statusDescription || this.statusDescription.length > 100)) {
+      Swal.fire('Error', 'La descripción de cancelación es requerida y debe tener máximo 100 caracteres', 'error');
+      return;
+    }
+
+    const currentStatus = this.currentOrder?.status;
+    
+    if (currentStatus === 'P' && this.newStatus !== 'S' && this.newStatus !== 'C') {
+      Swal.fire('Error', 'Desde Pendiente solo puede cambiar a Enviado o Cancelado', 'error');
+      return;
+    }
+
+    if (currentStatus === 'S' && this.newStatus !== 'V' && this.newStatus !== 'C') {
+      Swal.fire('Error', 'Desde Enviado solo puede cambiar a Confirmado o Cancelado', 'error');
+      return;
+    }
+
+    if (currentStatus === 'V' && this.newStatus !== 'R' && this.newStatus !== 'C') {
+      Swal.fire('Error', 'Desde Confirmado solo puede cambiar a Recibido o Cancelado', 'error');
+      return;
+    }
+
+    this.updateOrderStatus();
+  }
+
   updateOrderStatus(): void {
-    if (!this.currentOrder) return;
-
-    const currentStatus = this.currentOrder.status;
-    const newStatus = this.newStatus;
-
-    if (currentStatus === 'P' && newStatus !== 'S' && newStatus !== 'C') {
-        Swal.fire('Error', 'Desde Pendiente solo puede cambiar a Enviado o Cancelado', 'error');
-        return;
-    }
-
-    if (currentStatus === 'S' && newStatus !== 'V' && newStatus !== 'C') {
-        Swal.fire('Error', 'Desde Enviado solo puede cambiar a Confirmado o Cancelado', 'error');
-        return;
-    }
-
-    if (currentStatus === 'V' && newStatus !== 'R' && newStatus !== 'C') {
-        Swal.fire('Error', 'Desde Confirmado solo puede cambiar a Recibido o Cancelado', 'error');
-        return;
-    }
-
-    if (this.newStatus === 'C' && (!this.statusDescription || this.statusDescription.length > 75)) {
-        Swal.fire('Error', 'La descripción de cancelación es requerida y debe tener máximo 75 caracteres', 'error');
-        return;
-    }
-
     const statusRequest: IOrderStatusRequest = {
-        status: this.newStatus
+      status: this.newStatus
     };
 
     if (this.newStatus === 'C') {
-        statusRequest.description = this.statusDescription;
+      statusRequest.description = this.statusDescription;
     }
 
     this.isLoading = true;
-    this.purchaseService.updateOrderStatus(this.currentOrder.idOrder, statusRequest).subscribe({
-        next: (response) => {
-            if (response.isSuccess) {
-                Swal.fire('Éxito', 'Estado actualizado correctamente', 'success');
-                this.closeStatusModal();
-                this.loadData();
-            } else {
-                Swal.fire('Error', response.error || 'Error al actualizar el estado', 'error');
-            }
-            this.isLoading = false;
-        },
-        error: (error) => this.handleError('Error al actualizar el estado', error)
+    this.purchaseService.updateOrderStatus(this.currentOrder!.idOrder, statusRequest).subscribe({
+      next: (response) => {
+        if (response.isSuccess) {
+          Swal.fire({
+            title: 'Éxito',
+            text: 'Estado actualizado correctamente',
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+          });
+          this.closeStatusModal();
+          this.loadData();
+        } else {
+          Swal.fire('Error', response.error || 'Error al actualizar el estado', 'error');
+        }
+        this.isLoading = false;
+      },
+      error: (error) => this.handleError('Error al actualizar el estado', error)
     });
-}
+  }
 
-  receiveOrder(): void {
-    if (!this.currentOrder) return;
-    const productsToReceive = this.productosAgregados
-        .filter(item => item.quantity > 0)
-        .map(item => {
-            const productData: any = {
-                idOrderDetail: item.idOrderDetail || 0,
-                idProduct: item.idProduct,
-                priceBuy: item.priceBuy,
-                salePrice: item.salePrice || 0,
-                quantity: item.quantity,
-                idOrder: this.currentOrder!.idOrder
-            };
-            if (item.isExpire) {
-                productData.expireProduct = new Date().toISOString();
-            }
-            if (item.observation) {
-                productData.observation = item.observation;
-            }
-
-            return productData;
-        });
-
-    if (productsToReceive.length === 0) {
-        Swal.fire('Error', 'Debe haber al menos un producto con cantidad mayor a cero', 'error');
-        return;
+  validateAndReceiveOrder(): void {
+    if (!this.receiveDescription) {
+      Swal.fire('Error', 'La descripción es requerida', 'error');
+      return;
     }
 
+    const invalidProducts = this.productosAgregados.filter(
+      item => item.quantity <= 0 || isNaN(item.quantity) ||
+            item.priceBuy <= 0 || isNaN(item.priceBuy) ||
+            item.salePrice <= 0 || isNaN(item.salePrice)
+    );
+    
+    if (invalidProducts.length > 0) {
+      Swal.fire('Error', 'Todos los productos deben tener cantidad, precio de compra y precio de venta válidos', 'error');
+      return;
+    }
+
+    this.receiveOrder();
+  }
+
+  receiveOrder(): void {
+    const productsToReceive = this.productosAgregados.map(item => {
+      const productData: any = {
+        idOrderDetail: item.idOrderDetail || 0,
+        idProduct: item.idProduct,
+        priceBuy: item.priceBuy,
+        salePrice: item.salePrice,
+        quantity: item.quantity,
+        idOrder: this.currentOrder!.idOrder
+      };
+      if (item.isExpire) {
+        productData.expireProduct = new Date().toISOString();
+      }
+      if (item.observation) {
+        productData.observation = item.observation;
+      }
+      return productData;
+    });
+
     const receiveRequest: IOrderReceiveRequest = {
-        products: productsToReceive,
-        description: this.receiveDescription || undefined
+      products: productsToReceive,
+      description: this.receiveDescription
     };
 
     this.isLoading = true;
-    this.purchaseService.receiveOrder(this.currentOrder.idOrder, receiveRequest).subscribe({
-        next: (response) => {
-            if (response.isSuccess) {
-                Swal.fire('Éxito', 'Orden recibida correctamente', 'success');
-                this.closeReceiveModal();
-                this.loadData();
-            } else {
-                Swal.fire('Error', response.error || 'Error al recibir la orden', 'error');
-            }
-            this.isLoading = false;
-        },
-        error: (error) => this.handleError('Error al recibir la orden', error)
+    this.purchaseService.receiveOrder(this.currentOrder!.idOrder, receiveRequest).subscribe({
+      next: (response) => {
+        if (response.isSuccess) {
+          Swal.fire({
+            title: 'Éxito',
+            text: 'Orden recibida correctamente',
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+          });
+          this.closeReceiveModal();
+          this.loadData();
+        } else {
+          Swal.fire('Error', response.error || 'Error al recibir la orden', 'error');
+        }
+        this.isLoading = false;
+      },
+      error: (error) => this.handleError('Error al recibir la orden', error)
     });
   }
 
@@ -658,6 +729,7 @@ export class NewPurchaseComponent implements OnInit {
     this.selectedSupplierId = null;
     this.selectedProductId = null;
     this.quantity = 1;
+    this.orderDescription = '';
     this.filteredProducts = [...this.products];
     this.productosBajoStock = [];
     this.currentReceivePage = 1;

@@ -24,6 +24,8 @@ export interface IProduct {
     dateExpire: string | null;
     idSupplier: number | null;
     supplier: ISupplier | null;
+    priceBuy?: number; 
+    salePrice?: number;
 }
 
 export interface IOrder {
@@ -54,6 +56,7 @@ export interface IOrderDetail {
     productDescription?: string | null;
     status?: string;
     observation?: string | null;
+    salePrice?: number;
 }
 
 export interface IOrderRequest {
@@ -118,7 +121,7 @@ export interface IProductOrder {
     nameProduct: string;
     quantity: number;
     priceBuy: number;
-    salePrice?: number;
+    salePrice: number;
     idOrderDetail?: number;
     subtotal?: number;
     isExpire?: boolean;
