@@ -57,6 +57,7 @@ export interface IOrderDetail {
     status?: string;
     observation?: string | null;
     salePrice?: number;
+    expireProduct?: string | null;
 }
 
 export interface IOrderRequest {
@@ -86,6 +87,7 @@ export interface IOrderUpdateRequest {
 }
 
 export interface IOrderReceiveRequest {
+    description?: string;
     products: {
         idOrderDetail: number;
         idProduct: number;
@@ -96,7 +98,6 @@ export interface IOrderReceiveRequest {
         expireProduct?: string | null;
         observation?: string | null;
     }[];
-    description?: string;
 }
 
 export interface IOrderStatusRequest {
@@ -129,6 +130,7 @@ export interface IProductOrder {
     productDescription?: string | null;
     observation?: string | null;
     status?: string;
+    expireProduct?: string | null;
 }
 
 export interface ILowStockProduct {

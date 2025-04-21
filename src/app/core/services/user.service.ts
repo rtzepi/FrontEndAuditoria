@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment.development';
-import { IUser, IUserResponse, IEmployee, IRole } from '../../shared/models/IUser';
+import { IUser, IUserResponse, IEmployee, IRole, IResetPasswordResponse } from '../../shared/models/IUser';
 
 @Injectable({
   providedIn: 'root'
@@ -38,7 +38,8 @@ export class UserService {
 
   resetPassword(id: number): Observable<IUserResponse> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post<IUserResponse>(`${this.apiUrl}/reset-password`, { id }, { headers });
+    return this.http.post<IUserResponse>(
+      `${this.apiUrl}/resetPassword`, id, { headers });
   }
 
   deleteUser(id: number): Observable<IUserResponse> {
