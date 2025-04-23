@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import { UserService } from '../../../../core/services/user.service';
 import { InputSearchComponent } from '../../../../shared/components/input-search/input-search.component';
 import { Location } from '@angular/common';
+import { IResetPasswordResponse } from '../../../../shared/models/IUser';
 
 interface IUser {
   idUser: number;
@@ -300,17 +301,20 @@ export class UserComponent implements OnInit {
   resetPassword(id: number) {
     this.isLoading = true;
     this.userService.resetPassword(id).subscribe({
-      next: (response: IUserResponse) => {
+      next: (response: IResetPasswordResponse) => {
         if (response.isSuccess) {
-          Swal.fire('Éxito', 'Contraseña restaurada correctamente. Se ha enviado un correo al usuario con la nueva contraseña.', 'success');
+          Swal.fire('Éxito', response.message || 'Contraseña restaurada correctamente. Se ha enviado un correo al usuario con la nueva contraseña.', 'success');
         } else {
           Swal.fire('Error', response.error || 'Error al restaurar contraseña', 'error');
         }
         this.isLoading = false;
       },
-      error: (error) => this.handleError('Error al restaurar contraseña', error)
+      error: (error) => {
+        console.error('Error completo:', error);
+        this.handleError('Error al restaurar contraseña', error);
+      }
     });
-  }
+}
 
   confirmDelete(user: IUser) {
     Swal.fire({

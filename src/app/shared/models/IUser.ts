@@ -41,3 +41,10 @@ export interface IUserResponse {
     error?: string | null;
     message?: string;
 }
+
+
+export interface IResetPasswordResponse {
+    isSuccess: boolean;
+    message?: string;
+    error?: string | null;
+}

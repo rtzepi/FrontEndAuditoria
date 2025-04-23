@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment.development';
 import { 
@@ -54,9 +54,10 @@ export class NewPurchaseService {
         return this.http.post<IOrderResponse>(`${this.apiUrl}/Order/Receive/${id}`, receiveRequest);
     }
 
-    generatePdf(idOrder: number): Observable<Blob> {
+    generatePdf(idOrder: number): Observable<HttpResponse<Blob>> {
         return this.http.get(`${this.apiUrl}/Order/PDForder/${idOrder}`, {
-            responseType: 'blob'
+            responseType: 'blob',
+            observe: 'response'
         });
     }
 }

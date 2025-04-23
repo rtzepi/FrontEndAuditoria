@@ -35,53 +35,53 @@ import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
   styleUrls: ['./new-purchase.component.scss']
 })
 export class NewPurchaseComponent implements OnInit {
-  @ViewChild('orderForm') orderForm?: NgForm;
+    @ViewChild('orderForm') orderForm?: NgForm;
+    
+    showOrderModal = false;
+    showStatusModal = false;
+    showReceiveModal = false;
+    orders: IOrder[] = [];
+    filteredOrders: IOrder[] = [];
+    isLoading = false;
+    isEditing = false;
+    currentOrder: IOrder | null = null;
+    orderDescription = '';
   
-  showOrderModal = false;
-  showStatusModal = false;
-  showReceiveModal = false;
-  orders: IOrder[] = [];
-  filteredOrders: IOrder[] = [];
-  isLoading = false;
-  isEditing = false;
-  currentOrder: IOrder | null = null;
-  orderDescription = '';
-
-  suppliers: ISupplier[] = [];
-  products: IProduct[] = [];
-  filteredProducts: IProduct[] = [];
-  selectedSupplierId: number | null = null;
-  selectedProductId: number | null = null;
-  quantity = 1;
+    suppliers: ISupplier[] = [];
+    products: IProduct[] = [];
+    filteredProducts: IProduct[] = [];
+    selectedSupplierId: number | null = null;
+    selectedProductId: number | null = null;
+    quantity = 1;
+    
+    productosAgregados: IProductOrder[] = [];
+    productosBajoStock: ILowStockProduct[] = [];
+    hasExpirableProducts = false;
   
-  productosAgregados: IProductOrder[] = [];
-  productosBajoStock: ILowStockProduct[] = [];
-  hasExpirableProducts = false;
-
-  newStatus = '';
-  statusDescription = '';
-  receiveDescription = '';
-  currentReceivePage = 1;
-  receiveItemsPerPage = 7;
-
-  currentPage = 1;
-  itemsPerPage = 10;
-  searchTerm = '';
-  searchSubject = new Subject<string>();
-
-  supplierMap: { [key: number]: ISupplier } = {};
-  productMap: { [key: number]: IProduct } = {};
-
-  constructor(
-    private purchaseService: NewPurchaseService,
-    private location: Location,
-    private cdr: ChangeDetectorRef
-  ) {}
-
-  ngOnInit() {
-    this.loadData();
-    this.setupSearch();
-  }
+    newStatus = '';
+    statusDescription = '';
+    receiveDescription = '';
+    currentReceivePage = 1;
+    receiveItemsPerPage = 7;
+  
+    currentPage = 1;
+    itemsPerPage = 10;
+    searchTerm = '';
+    searchSubject = new Subject<string>();
+  
+    supplierMap: { [key: number]: ISupplier } = {};
+    productMap: { [key: number]: IProduct } = {};
+  
+    constructor(
+      private purchaseService: NewPurchaseService,
+      private location: Location,
+      private cdr: ChangeDetectorRef
+    ) {}
+  
+    ngOnInit() {
+      this.loadData();
+      this.setupSearch();
+    }
 
   isOrderFormValid(): boolean {
     return !!this.selectedSupplierId && this.productosAgregados.length > 0;
@@ -92,11 +92,16 @@ export class NewPurchaseComponent implements OnInit {
       return false;
     }
 
-    return this.productosAgregados.every(item => 
-      item.quantity > 0 && 
-      item.priceBuy > 0 &&
-      item.salePrice > 0
-    );
+    return this.productosAgregados.every(item => {
+      const basicValid = item.quantity > 0 && 
+                        item.priceBuy > 0 &&
+                        item.salePrice > 0;
+      
+      if (item.isExpire) {
+        return basicValid && !!item.expireProduct;
+      }
+      return basicValid;
+    });
   }
 
   private loadData() {
@@ -106,7 +111,9 @@ export class NewPurchaseComponent implements OnInit {
       next: (response: IOrderArrayResponse) => {
         if (response.isSuccess && response.value) {
           this.orders = Array.isArray(response.value) ? response.value : [response.value];
-          this.filteredOrders = [...this.orders];
+          this.filteredOrders = this.orders.filter(order => 
+            order.status !== 'C' && order.status !== 'R'
+          );
           this.orders.forEach(order => {
             if (order.idOrder) {
               this.loadOrderProducts(order.idOrder);
@@ -153,7 +160,9 @@ export class NewPurchaseComponent implements OnInit {
           const orderIndex = this.orders.findIndex(o => o.idOrder === orderId);
           if (orderIndex !== -1) {
             this.orders[orderIndex].products = response.value.products || [];
-            this.filteredOrders = [...this.orders];
+            this.filteredOrders = this.orders.filter(order => 
+              order.status !== 'C' && order.status !== 'R'
+            );
           }
         }
       },
@@ -178,16 +187,19 @@ export class NewPurchaseComponent implements OnInit {
 
   filterOrders() {
     if (!this.searchTerm) {
-      this.filteredOrders = [...this.orders];
+      this.filteredOrders = this.orders.filter(order => 
+        order.status !== 'C' && order.status !== 'R'
+      );
       return;
     }
     
     const term = this.searchTerm.toLowerCase();
     this.filteredOrders = this.orders.filter(order => 
+      (order.status !== 'C' && order.status !== 'R') && (
       (this.getSupplierName(order.idSupplier)?.toLowerCase().includes(term) ||
       (order.idOrder?.toString().includes(term)) ||
       (order.created_at?.toLowerCase().includes(term)) ||
-      (this.getStatusText(order.status).toLowerCase().includes(term))));
+      (this.getStatusText(order.status).toLowerCase().includes(term)))));
   }
 
   getSupplierName(idSupplier: number): string {
@@ -207,16 +219,18 @@ export class NewPurchaseComponent implements OnInit {
     return order.totalAmount || 0;
   }
 
-  getStatusText(status: string): string {
+  getStatusText(status: string | undefined): string {
+    if (!status) return 'Desconocido';
+    
     switch(status) {
-      case 'P': return 'Pendiente';
-      case 'V': return 'Confirmada';
-      case 'S': return 'Enviada';
-      case 'R': return 'Recibida';
-      case 'C': return 'Cancelada';
-      default: return 'Desconocido';
+        case 'P': return 'Pendiente';
+        case 'V': return 'Confirmada';
+        case 'S': return 'Enviada';
+        case 'R': return 'Recibida';
+        case 'C': return 'Cancelada';
+        default: return 'Desconocido';
     }
-  }
+}
 
   getStatusClass(status: string): string {
     switch(status) {
@@ -289,7 +303,7 @@ export class NewPurchaseComponent implements OnInit {
             nameProduct: detail.productName || this.getProductById(detail.idProduct)?.nameProduct || 'Producto desconocido',
             quantity: detail.quantity,
             priceBuy: detail.priceBuy,
-            salePrice: 0, // No mostramos precio de venta en edición
+            salePrice: 0,
             idOrderDetail: detail.idOrderDetail,
             subtotal: detail.subtotal,
             isExpire: detail.isExpire || false,
@@ -309,45 +323,46 @@ export class NewPurchaseComponent implements OnInit {
 
   openStatusModal(order: IOrder) {
     this.currentOrder = order;
-    this.newStatus = '';
+    this.newStatus = order.status; 
     this.statusDescription = '';
     this.showStatusModal = true;
+}
+
+openReceiveModal(order: IOrder) {
+  if (order.status !== 'V') {
+    Swal.fire('Error', 'Solo se pueden recibir órdenes con estado Confirmado', 'error');
+    return;
   }
 
-  openReceiveModal(order: IOrder) {
-    if (order.status !== 'V') {
-      Swal.fire('Error', 'Solo se pueden recibir órdenes con estado Confirmado', 'error');
-      return;
-    }
-
-    this.currentOrder = order;
-    this.receiveDescription = '';
-    
-    this.purchaseService.getOrderById(order.idOrder).subscribe({
-      next: (response: IOrderResponse) => {
-        if (response.isSuccess && response.value) {
-          const orderDetails = response.value.products || [];
-          this.productosAgregados = orderDetails.map(detail => ({
-            idProduct: detail.idProduct,
-            nameProduct: detail.productName || this.getProductById(detail.idProduct)?.nameProduct || 'Producto desconocido',
-            quantity: detail.quantity,
-            priceBuy: detail.priceBuy,
-            salePrice: detail.priceBuy * 1.2, // 20% de margen por defecto por si se le olvida al empleado colocar un precio de venta
-            idOrderDetail: detail.idOrderDetail,
-            subtotal: detail.subtotal,
-            isExpire: detail.isExpire || false,
-            stockMin: detail.stockMin || 0,
-            productDescription: detail.productDescription,
-            status: detail.status || 'A',
-            observation: detail.observation || ''
-          }));
-          this.showReceiveModal = true;
-          this.cdr.detectChanges();
-        }
-      },
-      error: (error) => this.handleError('Error al cargar la orden', error)
-    });
-  }
+  this.currentOrder = order;
+  this.receiveDescription = '';
+  
+  this.purchaseService.getOrderById(order.idOrder).subscribe({
+    next: (response: IOrderResponse) => {
+      if (response.isSuccess && response.value) {
+        const orderDetails = response.value.products || [];
+        this.productosAgregados = orderDetails.map(detail => ({
+          idProduct: detail.idProduct,
+          nameProduct: detail.productName || this.getProductById(detail.idProduct)?.nameProduct || 'Producto desconocido',
+          quantity: detail.quantity,
+          priceBuy: detail.priceBuy,
+          salePrice: detail.priceBuy * 1.2, // 20% de margen por defecto para evitar perdidas
+          idOrderDetail: detail.idOrderDetail,
+          subtotal: detail.subtotal,
+          isExpire: detail.isExpire || false,
+          stockMin: detail.stockMin || 0,
+          productDescription: detail.productDescription,
+          status: detail.status || 'A',
+          observation: detail.observation || '',
+          expireProduct: detail.expireProduct || null
+        }));
+        this.showReceiveModal = true;
+        this.cdr.detectChanges();
+      }
+    },
+    error: (error) => this.handleError('Error al cargar la orden', error)
+  });
+}
 
   closeStatusModal() {
     this.showStatusModal = false;
@@ -413,7 +428,7 @@ export class NewPurchaseComponent implements OnInit {
         nameProduct: product.nameProduct || 'Sin nombre',
         quantity: this.quantity,
         priceBuy: product.priceBuy || 0,
-        salePrice: 0, // No requerido en creación/edición
+        salePrice: 0,
         isExpire: product.isExpire || false,
         stockMin: product.stockMin || 0,
         productDescription: product.description || null
@@ -636,14 +651,18 @@ export class NewPurchaseComponent implements OnInit {
       return;
     }
 
-    const invalidProducts = this.productosAgregados.filter(
-      item => item.quantity <= 0 || isNaN(item.quantity) ||
-            item.priceBuy <= 0 || isNaN(item.priceBuy) ||
-            item.salePrice <= 0 || isNaN(item.salePrice)
-    );
+    const invalidProducts = this.productosAgregados.filter(item => {
+      const basicInvalid = item.quantity <= 0 || isNaN(item.quantity) ||
+                          item.priceBuy <= 0 || isNaN(item.priceBuy) ||
+                          item.salePrice <= 0 || isNaN(item.salePrice);
+      if (item.isExpire) {
+        return basicInvalid || !item.expireProduct;
+      }
+      return basicInvalid;
+    });
     
     if (invalidProducts.length > 0) {
-      Swal.fire('Error', 'Todos los productos deben tener cantidad, precio de compra y precio de venta válidos', 'error');
+      Swal.fire('Error', 'Revise los datos de los productos. Los productos perecederos deben tener fecha de expiración.', 'error');
       return;
     }
 
@@ -658,14 +677,14 @@ export class NewPurchaseComponent implements OnInit {
         priceBuy: item.priceBuy,
         salePrice: item.salePrice,
         quantity: item.quantity,
-        idOrder: this.currentOrder!.idOrder
+        idOrder: this.currentOrder!.idOrder,
+        observation: item.observation || null
       };
+      
       if (item.isExpire) {
-        productData.expireProduct = new Date().toISOString();
+        productData.expireProduct = item.expireProduct || new Date().toISOString();
       }
-      if (item.observation) {
-        productData.observation = item.observation;
-      }
+      
       return productData;
     });
 
@@ -696,18 +715,41 @@ export class NewPurchaseComponent implements OnInit {
     });
   }
 
+  updateExpireDate(index: number, date: string) {
+    const startIndex = (this.currentReceivePage - 1) * this.receiveItemsPerPage;
+    const actualIndex = startIndex + index;
+    this.productosAgregados[actualIndex].expireProduct = date;
+    this.cdr.detectChanges();
+  }
+
   downloadPdf(idOrder: number): void {
     this.isLoading = true;
     this.purchaseService.generatePdf(idOrder).subscribe({
-      next: (blob) => {
+      next: (response) => {
+        const blob = response.body!;
+        const contentDisp = response.headers.get('content-disposition') || '';
+        let filename = '';
+        const starMatch = contentDisp.match(/filename\*\s*=\s*([^']*)''([^;]+)/i);
+        if (starMatch && starMatch[2]) {
+          filename = decodeURIComponent(starMatch[2]);
+        } else {
+          const nameMatch = contentDisp.match(/filename="?([^";]+)"?/i);
+          if (nameMatch && nameMatch[1]) {
+            filename = nameMatch[1];
+          }
+        }
+        if (!filename) {
+          filename = `orden_compra_${idOrder}.pdf`;
+        }
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `orden_compra_${idOrder}.pdf`;
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
+  
         this.isLoading = false;
       },
       error: (error) => this.handleError('Error al generar PDF', error)

@@ -236,16 +236,18 @@
         <h2>Cambiar Estado de la Orden #{{ currentOrder?.idOrder }}</h2>
         
         <div class="form-group">
-            <label for="status">Nuevo Estado <span class="required">*</span></label>
-            <select id="status" [(ngModel)]="newStatus" class="form-control" #statusSelect="ngModel" required>
-                <option [ngValue]="null" disabled selected>Seleccione estado</option>
+            <label for="newStatus">Cambiar Estado: <span class="required">*</span></label>
+            <select id="newStatus" [(ngModel)]="newStatus" class="form-control" #statusSelect="ngModel" required>
+                <option [ngValue]="newStatus" disabled>
+                    Actual: {{ getStatusText(currentOrder?.status) }}
+                </option>
                 <option value="S" *ngIf="currentOrder?.status === 'P'">Enviado</option>
                 <option value="V" *ngIf="currentOrder?.status === 'S'">Confirmado</option>
                 <option value="C">Cancelado</option>
             </select>
             <div *ngIf="statusSelect.invalid && (statusSelect.dirty || statusSelect.touched)" 
                 class="error-message">
-                Estado es requerido
+                Debe seleccionar un nuevo estado
             </div>
         </div>
 
@@ -305,7 +307,9 @@
                         <th>Precio Compra</th>
                         <th>Precio Venta</th>
                         <th>Total</th>
+                        <th>Fecha Expiración</th>
                         <th>Observación (máx. 50)</th>
+                        <th>Acción</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -340,6 +344,12 @@
                         </td>
                         <td>Q{{ (item.quantity * item.priceBuy) | number:'1.2-2' }}</td>
                         <td>
+                            <input *ngIf="item.isExpire" type="date" [(ngModel)]="item.expireProduct" 
+                                (change)="updateExpireDate(i, item.expireProduct || '')"
+                                required>
+                            <span *ngIf="!item.isExpire">No aplica</span>
+                        </td>
+                        <td>
                             <input type="text" [(ngModel)]="item.observation" 
                                 (change)="updateObservation(i, item.observation || '')" 
                                 maxlength="50"
@@ -347,6 +357,9 @@
                             <div class="char-counter">
                                 Caracteres restantes: {{ getRemainingChars(item.observation, 50) }}
                             </div>
+                        </td>
+                        <td>
+                            <button class="btn quitar-btn" (click)="removeProduct(i)">Quitar</button>
                         </td>
                     </tr>
                 </tbody>
