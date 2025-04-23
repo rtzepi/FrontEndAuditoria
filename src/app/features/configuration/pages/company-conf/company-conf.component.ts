@@ -1,6 +1,10 @@
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { NgForm, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { CompanyService } from '../../../../core/services/company.service';
+import { ICompany, ICompanySingleResponse } from '../../../../shared/models/ICompany';
+import { Location } from '@angular/common';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-company-conf',
@@ -9,110 +13,167 @@ import { CommonModule } from '@angular/common';
   templateUrl: './company-conf.component.html',
   styleUrls: ['./company-conf.component.scss']
 })
-export class CompanyConfComponent {
-  modoEdicion = false;
-  modalAbierto = false;
-  vistaPrevia: string | ArrayBuffer | null = null;
-  imagenTemporal: string | ArrayBuffer | null = null;
-  archivoSeleccionado: File | null = null;
+export class CompanyConfComponent implements OnInit {
+  @ViewChild('companyForm') companyForm!: NgForm;
+  showModal = false;
+  imagePreview: string | null = null;
+  isLoading = false;
+  isEditing = false;
+  photoTouched = false;
+  formSubmitted = false;
 
-  empresaOriginal: { [key: string]: string };
-  empresa: { [key: string]: string } = {
-    nombre: 'FERRETERIA EL CONDOR',
-    direccion: '6TA AVE 4-55 ZONA 2',
-    nit: '4087162-2',
-    telefono: '',
-    email: 'ELCONDOR2114@GMAIL.COM'
+  // Límites de caracteres
+  readonly MAX_NAME_LENGTH = 100;
+  readonly MAX_ADDRESS_LENGTH = 200;
+  readonly MAX_PHONE_LENGTH = 8;
+  readonly MAX_EMAIL_LENGTH = 100;
+  readonly MAX_NIT_LENGTH = 15;
+
+  company: ICompany = {
+    idCompany: 0,
+    companyName: '',
+    phoneNumber: '',
+    address: '',
+    email: '',
+    nit: '',
+    status: 'A',
+    idLogo: 0,
+    imgBase64: null,
+    image: null
   };
 
-  campos = [
-    { label: 'Nombre', key: 'nombre', placeholder: 'Nombre de la Empresa' },
-    { label: 'Dirección', key: 'direccion', placeholder: 'Dirección de la Empresa' },
-    { label: 'NIT', key: 'nit', placeholder: 'NIT de la Empresa' },
-    { label: 'Teléfono', key: 'telefono', placeholder: 'Teléfono de la Empresa' },
-    { label: 'Email', key: 'email', placeholder: 'Correo de la Empresa' }
-  ];
+  constructor(private companyService: CompanyService, private location: Location) {}
 
-  telefonoInvalido = false;
-  touchedFields: { [key: string]: boolean } = {};
-  campoIncompleto: { [key: string]: boolean } = {};
+  ngOnInit(): void {
+    this.loadCompany();
+  }
 
-  constructor() {
-    const datos = localStorage.getItem('empresa');
-    if (datos) {
-      this.empresa = JSON.parse(datos);
+  private loadCompany() {
+    this.isLoading = true;
+    this.companyService.getCompany().subscribe({
+      next: (response) => {
+        if (response.isSuccess && response.value) {
+          this.company = response.value;
+          this.imagePreview = response.value.imgBase64;
+        }
+        this.isLoading = false;
+      },
+      error: (error) => this.handleError('Error al cargar la empresa', error)
+    });
+  }
+
+  validateNumber(event: KeyboardEvent): boolean {
+    const charCode = (event.which) ? event.which : event.keyCode;
+    if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+      event.preventDefault();
+      return false;
     }
+    return true;
+  }
 
-    this.empresaOriginal = { ...this.empresa };
-
-    const logo = localStorage.getItem('logoEmpresa');
-    if (logo) {
-      this.vistaPrevia = logo;
+  handleInput(field: keyof ICompany, maxLength: number, event: Event) {
+    const input = event.target as HTMLInputElement;
+    const value = input.value;
+    
+    if (value.length > maxLength) {
+      input.value = value.substring(0, maxLength);
+      (this.company[field] as any) = input.value;
     }
   }
 
-  validarTelefono() {
-    let telefono = this.empresa['telefono'];
-    telefono = telefono.slice(0, 8);
-    this.empresa['telefono'] = telefono;
-    this.telefonoInvalido = telefono.length !== 8 || !/^\d+$/.test(telefono);
+  getRemainingChars(field: keyof ICompany, maxLength: number): number {
+    const value = (this.company[field] as string) || '';
+    return maxLength - value.length;
   }
 
-  volver() {
-    history.back();
-  }
-
-  guardarEmpresa() {
-    this.campoIncompleto = {};
-
-    for (const key in this.empresa) {
-      if (!this.empresa[key]) {
-        this.campoIncompleto[key] = true;
-      }
-    }
-
-    if (Object.keys(this.campoIncompleto).length > 0 || this.telefonoInvalido) {
+  onSubmit() {
+    this.formSubmitted = true;
+    
+    if (this.companyForm.invalid) {
       return;
     }
 
-    localStorage.setItem('empresa', JSON.stringify(this.empresa));
-    if (this.vistaPrevia) {
-      localStorage.setItem('logoEmpresa', this.vistaPrevia.toString());
+    if (this.company.phoneNumber.length !== this.MAX_PHONE_LENGTH) {
+      Swal.fire('Error', `El teléfono debe tener exactamente ${this.MAX_PHONE_LENGTH} dígitos`, 'error');
+      return;
     }
 
-    this.modoEdicion = false;
-  }
-
-  cancelarEdicion() {
-    this.empresa = { ...this.empresaOriginal };
-    this.modoEdicion = false;
-  }
-
-  abrirModal() {
-    this.imagenTemporal = this.vistaPrevia;
-    this.modalAbierto = true;
-  }
-
-  cerrarModal() {
-    this.modalAbierto = false;
-    this.archivoSeleccionado = null;
-    this.imagenTemporal = this.vistaPrevia;
-  }
-
-  guardarImagen() {
-    this.vistaPrevia = this.imagenTemporal;
-    this.modalAbierto = false;
-  }
-
-  onArchivoSeleccionado(event: any) {
-    const archivo = event.target.files[0];
-    if (archivo) {
-      this.archivoSeleccionado = archivo;
-      const lector = new FileReader();
-      lector.onload = () => {
-        this.imagenTemporal = lector.result;
-      };
-      lector.readAsDataURL(archivo);
+    if (!this.company.imgBase64) {
+      Swal.fire('Error', 'El logo de la empresa es requerido', 'error');
+      return;
     }
+
+    this.saveCompany();
+  }
+
+  saveCompany() {
+    this.isLoading = true;
+    this.companyService.saveCompany(this.company).subscribe({
+      next: (response) => {
+        if (response.isSuccess && response.value) {
+          this.company = response.value;
+          this.imagePreview = response.value.imgBase64;
+          Swal.fire('Éxito', 'Empresa guardada correctamente', 'success');
+          this.isEditing = false;
+        } else {
+          Swal.fire('Error', response.error || 'Error al guardar', 'error');
+        }
+        this.isLoading = false;
+      },
+      error: (error) => this.handleError('Error al guardar', error)
+    });
+  }
+
+  handleImageUpload(event: Event) {
+    this.photoTouched = true;
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    if (!file.type.match(/image\/(jpeg|png|jpg)/)) {
+        Swal.fire('Error', 'Solo se permiten imágenes (JPEG, PNG, JPG)', 'error');
+        return;
+    }
+
+    if (file.size > 2097152) {
+        Swal.fire('Error', 'La imagen no debe exceder los 2MB', 'error');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e: ProgressEvent<FileReader>) => {
+        if (e.target?.result) {
+            this.imagePreview = e.target.result as string;
+            this.company.imgBase64 = (e.target.result as string).split(',')[1];
+        }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removePhoto() {
+    this.photoTouched = true;
+    this.imagePreview = null;
+    this.company.imgBase64 = null;
+    const fileInput = document.getElementById('companyLogo') as HTMLInputElement;
+    if (fileInput) {
+        fileInput.value = '';
+    }
+  }
+
+  toggleEdit() {
+    this.isEditing = !this.isEditing;
+    if (!this.isEditing) {
+      this.loadCompany();
+    }
+  }
+
+  goBack() {
+    this.location.back();
+  }
+
+  private handleError(message: string, error: any) {
+    console.error(message, error);
+    this.isLoading = false;
+    Swal.fire('Error', message, 'error');
   }
 }

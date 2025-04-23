@@ -1,83 +1,140 @@
-<div class="empresa-form-container">
-  <div class="contenido-con-logo">
-    <div class="formulario">
-      <div *ngIf="!modoEdicion" class="titulo-navegacion">
-        <a href="#" class="link-regreso" (click)="volver(); $event.preventDefault()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 0 1 .708.708L2.707 7.5H14.5A.5.5 0 0 1 15 8z" />
-          </svg>
-          <span>Empresa</span>
-        </a>
+<div class="container">
+  <button class="btn-back" (click)="goBack()">
+      <span class="material-icons">arrow_back</span>
+      Volver
+  </button>
+  
+  <div class="header">
+      <h2>Configuración de Empresa</h2>
+      <div class="header-actions">
+          <button (click)="toggleEdit()" class="btn btn-primary" [disabled]="isLoading">
+              {{ isEditing ? 'Cancelar' : 'Editar' }}
+          </button>
       </div>
+  </div>
 
-      <div class="empresa-formulario" *ngIf="!modoEdicion">
-        <ng-container *ngFor="let campo of campos">
-          <div class="campo-formulario" *ngIf="campo.key !== 'celular'">
-            <label>{{ campo.label }}:</label>
-            <input [value]="empresa[campo.key]" readonly required />
-            <div *ngIf="!empresa[campo.key] && modoEdicion" class="error-message">
-              {{campo.label}} es obligatorio.
-            </div>
-          </div>
-        </ng-container>
-        <div class="btn-guardar">
-          <button type="button" (click)="modoEdicion = true">Editar</button>
-        </div>
+  <div class="company-content">
+      <div class="company-form-container">
+          <form #companyForm="ngForm" (ngSubmit)="onSubmit()" class="company-form">
+              <div class="form-row">
+                  <div class="form-group">
+                      <label>Nombre de la Empresa <span class="required">*</span></label>
+                      <input type="text" [(ngModel)]="company.companyName" name="companyName" 
+                          required maxlength="{{MAX_NAME_LENGTH}}" #companyName="ngModel"
+                          [readonly]="!isEditing"
+                          (input)="handleInput('companyName', MAX_NAME_LENGTH, $event)">
+                      <div class="char-counter"
+                          [class.warning]="getRemainingChars('companyName', MAX_NAME_LENGTH) < 10"
+                          [class.danger]="getRemainingChars('companyName', MAX_NAME_LENGTH) === 0">
+                          Caracteres restantes: {{ getRemainingChars('companyName', MAX_NAME_LENGTH) }}
+                      </div>
+                      <div *ngIf="companyName.invalid && (companyName.dirty || companyName.touched)" class="error-message">
+                          Nombre de empresa es requerido
+                      </div>
+                  </div>
+                  
+                  <div class="form-group">
+                      <label>NIT <span class="required">*</span></label>
+                      <input type="text" [(ngModel)]="company.nit" name="nit"
+                          required maxlength="{{MAX_NIT_LENGTH}}" #nit="ngModel"
+                          [readonly]="!isEditing"
+                          (input)="handleInput('nit', MAX_NIT_LENGTH, $event)">
+                      <div class="char-counter"
+                          [class.warning]="getRemainingChars('nit', MAX_NIT_LENGTH) < 5"
+                          [class.danger]="getRemainingChars('nit', MAX_NIT_LENGTH) === 0">
+                          Caracteres restantes: {{ getRemainingChars('nit', MAX_NIT_LENGTH) }}
+                      </div>
+                      <div *ngIf="nit.invalid && (nit.dirty || nit.touched)" class="error-message">
+                          NIT es requerido
+                      </div>
+                  </div>
+              </div>
+
+              <div class="form-row">
+                  <div class="form-group">
+                      <label>Dirección <span class="required">*</span></label>
+                      <input type="text" [(ngModel)]="company.address" name="address" 
+                          required maxlength="{{MAX_ADDRESS_LENGTH}}" #address="ngModel"
+                          [readonly]="!isEditing"
+                          (input)="handleInput('address', MAX_ADDRESS_LENGTH, $event)">
+                      <div class="char-counter"
+                          [class.warning]="getRemainingChars('address', MAX_ADDRESS_LENGTH) < 20"
+                          [class.danger]="getRemainingChars('address', MAX_ADDRESS_LENGTH) === 0">
+                          Caracteres restantes: {{ getRemainingChars('address', MAX_ADDRESS_LENGTH) }}
+                      </div>
+                      <div *ngIf="address.invalid && (address.dirty || address.touched)" class="error-message">
+                          Dirección es requerida
+                      </div>
+                  </div>
+                  
+                  <div class="form-group">
+                      <label>Teléfono <span class="required">*</span></label>
+                      <input type="text" [(ngModel)]="company.phoneNumber" name="phoneNumber" 
+                          required pattern="[0-9]{8}" maxlength="{{MAX_PHONE_LENGTH}}" #phoneNumber="ngModel"
+                          [readonly]="!isEditing"
+                          (keypress)="validateNumber($event)"
+                          (input)="handleInput('phoneNumber', MAX_PHONE_LENGTH, $event)">
+                      <div class="char-counter"
+                          [class.warning]="getRemainingChars('phoneNumber', MAX_PHONE_LENGTH) < 2"
+                          [class.danger]="getRemainingChars('phoneNumber', MAX_PHONE_LENGTH) === 0">
+                          Caracteres restantes: {{ getRemainingChars('phoneNumber', MAX_PHONE_LENGTH) }}
+                      </div>
+                      <div *ngIf="phoneNumber.invalid && (phoneNumber.dirty || phoneNumber.touched)" class="error-message">
+                          <span *ngIf="phoneNumber.errors?.['required']">Teléfono es requerido</span>
+                          <span *ngIf="phoneNumber.errors?.['pattern']">Debe tener exactamente 8 dígitos</span>
+                      </div>
+                  </div>
+              </div>
+
+              <div class="form-group">
+                  <label>Email <span class="required">*</span></label>
+                  <input type="email" [(ngModel)]="company.email" name="email" 
+                      required email maxlength="{{MAX_EMAIL_LENGTH}}" #email="ngModel"
+                      [readonly]="!isEditing"
+                      (input)="handleInput('email', MAX_EMAIL_LENGTH, $event)">
+                  <div class="char-counter"
+                      [class.warning]="getRemainingChars('email', MAX_EMAIL_LENGTH) < 10"
+                      [class.danger]="getRemainingChars('email', MAX_EMAIL_LENGTH) === 0">
+                      Caracteres restantes: {{ getRemainingChars('email', MAX_EMAIL_LENGTH) }}
+                  </div>
+                  <div *ngIf="email.invalid && (email.dirty || email.touched)" class="error-message">
+                      <span *ngIf="email.errors?.['required']">Email es requerido</span>
+                      <span *ngIf="email.errors?.['email']">Formato de email inválido</span>
+                  </div>
+              </div>
+
+              <div class="form-group photo-upload" *ngIf="isEditing">
+                  <label>Logo de la Empresa <span class="required">*</span></label>
+                  <div class="upload-container">
+                      <div class="image-preview" *ngIf="imagePreview">
+                          <img [src]="imagePreview" alt="Vista previa del logo">
+                          <button type="button" class="btn-remove" (click)="removePhoto()" [disabled]="!isEditing">
+                              <span class="material-icons">close</span>
+                          </button>
+                      </div>
+                      <div class="upload-controls">
+                          <input type="file" id="companyLogo" (change)="handleImageUpload($event)" 
+                              accept="image/*" [disabled]="!isEditing || isLoading" hidden>
+                          <label for="companyLogo" class="btn-upload">
+                              <span class="material-icons">upload</span>
+                              {{ imagePreview ? 'Cambiar logo' : 'Subir logo' }}
+                          </label>
+                          <small>Tamaño máximo: 2MB (JPEG, PNG, JPG)</small>
+                          <div *ngIf="(formSubmitted || photoTouched) && !company.imgBase64" class="error-message">
+                              El logo de la empresa es obligatorio
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              <div class="form-actions" *ngIf="isEditing">
+                  <button type="submit" 
+                          class="btn-submit"
+                          [disabled]="companyForm.invalid || isLoading || !company.imgBase64">
+                      {{ isLoading ? 'Guardando...' : 'Guardar Cambios' }}
+                  </button>
+              </div>
+          </form>
       </div>
-
-      <form class="empresa-formulario" *ngIf="modoEdicion" (ngSubmit)="guardarEmpresa()">
-        <ng-container *ngFor="let campo of campos">
-          <div class="campo-formulario" *ngIf="campo.key !== 'celular'">
-            <label>{{ campo.label }}:</label>
-            <input
-              type="text"
-              [(ngModel)]="empresa[campo.key]"
-              name="{{campo.key}}"
-              placeholder="{{campo.placeholder}}"
-              (input)="campo.key === 'telefono' ? validarTelefono() : null"
-              [class.error]="telefonoInvalido"
-              maxlength="{{campo.key === 'telefono' ? 8 : (campo.key === 'nit' ? 10 : '')}}"
-              required
-              [ngClass]="{'touched': touchedFields[campo.key]}"
-              (blur)="touchedFields[campo.key] = true"
-            />
-            <div *ngIf="!empresa[campo.key] && touchedFields[campo.key]" class="error-message">
-              {{campo.label}} es obligatorio.
-            </div>
-            <div *ngIf="telefonoInvalido && campo.key === 'telefono'" class="error-message">
-              Número incompleto. Debe tener 8 dígitos.
-            </div>
-            <div *ngIf="campo.key === 'nit' && empresa['nit'].length > 10" class="error-message">
-              El NIT no puede tener más de 10 dígitos.
-            </div>
-          </div>
-        </ng-container>
-        <div class="btn-guardar">
-          <button type="submit">Guardar</button>
-          <button type="button" class="cancelar" (click)="cancelarEdicion()">Cancelar</button>
-        </div>
-      </form>
-    </div>
-
-    <div class="logo-columna" *ngIf="vistaPrevia || modoEdicion">
-      <img [src]="vistaPrevia" alt="Logo de la empresa" />
-      <button *ngIf="modoEdicion" type="button" class="boton-subir-logo" (click)="abrirModal()">Subir foto</button>
-    </div>
   </div>
 </div>
-
-<div *ngIf="modalAbierto" class="modal">
-  <div class="modal-content">
-    <span class="cerrar" (click)="cerrarModal()">&times;</span>
-    <h3>Subir logo de la empresa</h3>
-    <input type="file" accept="image/*" (change)="onArchivoSeleccionado($event)" />
-    <div *ngIf="imagenTemporal" class="logo-previo">
-      <img [src]="imagenTemporal" alt="Vista previa del logo" />
-    </div>
-    <div class="acciones-modal">
-      <button (click)="guardarImagen()">Guardar imagen</button>
-      <button (click)="cerrarModal()" class="cancelar">Cancelar</button>
-    </div>
-  </div>
-</div>
-
