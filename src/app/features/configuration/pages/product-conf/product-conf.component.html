@@ -29,7 +29,6 @@
                 <th>Categoría</th>
                 <th>Proveedor</th>
                 <th>Unidad de Medida</th>
-                <th>Fecha Vencimiento</th>
                 <th>Estado</th>
                 <th>Acciones</th>
             </tr>
@@ -52,7 +51,6 @@
                 <td>{{ getCategoryName(product.idCategory) }}</td>
                 <td>{{ getSupplierName(product.idSupplier) }}</td>
                 <td>{{ getUnitOfSaleName(product.idUnitOfSale) }}</td>
-                <td>{{ product.isExpire ? formatDate(product.dateExpire) : 'N/A' }}</td>
                 <td>
                     <span [class.active]="product.status === 'E'" [class.inactive]="product.status !== 'E'">
                         {{ product.status === 'E' ? 'Activo' : 'Inactivo' }}
@@ -103,7 +101,7 @@
                 <div class="form-group">
                     <label>Estado <span class="required">*</span></label>
                     <select [(ngModel)]="newProduct.status" name="status" required #status="ngModel" 
-                        [disabled]="isEditing || isReadOnly">
+                        [disabled]="isReadOnly">
                         <option value="">Seleccione un estado</option>
                         <option value="E">Activo</option>
                         <option value="D">Inactivo</option>
@@ -155,25 +153,7 @@
                         </option>
                     </select>
                 </div>
-                
-                <div class="form-group">
-                    <label>¿Tiene fecha de expiración?</label>
-                    <div class="checkbox-container">
-                        <input type="checkbox" [(ngModel)]="newProduct.isExpire" name="isExpire"
-                            [disabled]="isReadOnly">
-                        <span>Sí</span>
-                    </div>
-                </div>
             </div>
-
-            <div class="form-row" *ngIf="newProduct.isExpire">
-                <div class="form-group">
-                    <label>Fecha de Expiración</label>
-                    <input type="date" [(ngModel)]="newProduct.dateExpire" name="dateExpire"
-                        [disabled]="isReadOnly">
-                </div>
-            </div>
-
             <div class="form-group">
                 <label>Descripción <span class="required">*</span></label>
                 <textarea [(ngModel)]="newProduct.description" name="description" 
