@@ -6,19 +6,11 @@ import { SalesReportComponent } from "./pages/sales-report/sales-report.componen
 import { JwtTokenService } from "../../core/services/jwt-token.service";
 import { inject } from "@angular/core";
 import { MenuReportsComponent } from './pages/menu-reports/menu-reports.component';
+import { ReportComponent } from "./pages/report/report.component";
 
 export const REPORTS_ROUTES: Routes = [
     {
     path: '',
-    component: MenuReportsComponent,
-    },
-    {
-    path: 'purchasingreport',
-    component: PurchasingReportComponent,
-    },
-    {
-    path: 'salesreport',
-    component: SalesReportComponent,
+    component: ReportComponent,
     }
-    
 ];

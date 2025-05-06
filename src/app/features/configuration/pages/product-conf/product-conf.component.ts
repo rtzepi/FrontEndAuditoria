@@ -84,44 +84,122 @@ export class ProductConfComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.loadProducts();
-        this.loadCategories();
-        this.loadSuppliers();
-        this.loadUnitsOfSale();
+        this.loadDataSequentially();
         this.setupSearch();
     }
 
-    private loadProducts() {
-        this.isLoading = true;
-        this.productService.getProducts().subscribe({
-            next: (response) => {
-                if (response.isSuccess && response.value) {
-                    this.products = response.value.map(product => {
-                        if (product.imgBase64) {
-                            product.picture = `${product.imgBase64}`;
-                        } else if (product.image) {
-                            const productImage = product.image as IProductImage;
-                            product.picture = `${productImage.mimeType}${productImage.data}`;
-                        }
-                        
-                        if (product.idCategory && !product.category) {
-                            product.category = this.categories.find(c => c.idCategory === product.idCategory) || null;
-                        }
-                        if (product.idSupplier && !product.supplier) {
-                            product.supplier = this.suppliers.find(s => s.idSupplier === product.idSupplier) || null;
-                        }
-                        if (product.idUnitOfSale && !product.unitOfSale) {
-                            product.unitOfSale = this.unitsOfSale.find(u => u.idUnitOfSale === product.idUnitOfSale) || null;
-                        }
-                        
-                        return product;
-                    });
-                    this.filteredProducts = [...this.products];
+    private async loadDataSequentially() {
+        try {
+            await this.loadCategories();
+            await this.loadSuppliers();
+            await this.loadUnitsOfSale();
+            await this.loadProducts();
+        } catch (error) {
+            this.handleError('Error al cargar datos iniciales', error);
+        }
+    }
+
+    private loadProducts(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.isLoading = true;
+            this.productService.getProducts().subscribe({
+                next: (response) => {
+                    if (response.isSuccess && response.value) {
+                        this.products = response.value.map(product => {
+                            if (product.imgBase64) {
+                                product.picture = this.formatImage(product.imgBase64);
+                            } else if (product.image) {
+                                const productImage = product.image as IProductImage;
+                                product.picture = this.formatImage(productImage.data, productImage.mimeType);
+                            }
+                            
+                            if (product.idCategory) {
+                                product.category = this.categories.find(c => c.idCategory === product.idCategory) || null;
+                            }
+                            if (product.idSupplier) {
+                                product.supplier = this.suppliers.find(s => s.idSupplier === product.idSupplier) || null;
+                            }
+                            if (product.idUnitOfSale) {
+                                product.unitOfSale = this.unitsOfSale.find(u => u.idUnitOfSale === product.idUnitOfSale) || null;
+                            }
+                            
+                            return product;
+                        });
+                        this.filteredProducts = [...this.products];
+                    }
+                    this.isLoading = false;
+                    resolve();
+                },
+                error: (error) => {
+                    this.isLoading = false;
+                    reject(error);
                 }
-                this.isLoading = false;
-            },
-            error: (error) => this.handleError('Error al cargar productos', error)
+            });
         });
+    }
+
+    private loadCategories(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.productService.getCategories().subscribe({
+                next: (response) => {
+                    if (response.isSuccess && response.value) {
+                        this.categories = response.value;
+                        this.categoryMap = {};
+                        this.categories.forEach(category => {
+                            this.categoryMap[category.idCategory] = category.categoryName;
+                        });
+                    }
+                    resolve();
+                },
+                error: (error) => reject(error)
+            });
+        });
+    }
+
+    private loadSuppliers(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.productService.getSuppliers().subscribe({
+                next: (response) => {
+                    if (response.isSuccess && response.value) {
+                        this.suppliers = response.value;
+                        this.supplierMap = {};
+                        this.suppliers.forEach(supplier => {
+                            this.supplierMap[supplier.idSupplier] = supplier.nameSupplier;
+                        });
+                    }
+                    resolve();
+                },
+                error: (error) => reject(error)
+            });
+        });
+    }
+
+    private loadUnitsOfSale(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.productService.getUnitsOfSale().subscribe({
+                next: (response) => {
+                    if (response.isSuccess && response.value) {
+                        this.unitsOfSale = response.value;
+                        this.unityOfSaleMap = {};
+                        this.unitsOfSale.forEach(unit => {
+                            this.unityOfSaleMap[unit.idUnitOfSale] = `${unit.unityName} (${unit.abbreviation})`;
+                        });
+                    }
+                    resolve();
+                },
+                error: (error) => reject(error)
+            });
+        });
+    }
+
+    private formatImage(base64Data: string, mimeType: string = 'image/jpeg'): string {
+        if (!base64Data) return '';
+        
+        if (base64Data.startsWith('data:')) {
+            return base64Data;
+        }
+        
+        return `data:${mimeType};base64,${base64Data}`;
     }
 
     private formatDateForDisplay(dateString: string | null): string | null {
@@ -142,51 +220,6 @@ export class ProductConfComponent implements OnInit {
         } catch {
             return null;
         }
-    }
-
-    private loadCategories() {
-        this.productService.getCategories().subscribe({
-            next: (response) => {
-                if (response.isSuccess && response.value) {
-                    this.categories = response.value;
-                    this.categoryMap = {};
-                    this.categories.forEach(category => {
-                        this.categoryMap[category.idCategory] = category.categoryName;
-                    });
-                }
-            },
-            error: (error) => this.handleError('Error al cargar categorías', error)
-        });
-    }
-
-    private loadSuppliers() {
-        this.productService.getSuppliers().subscribe({
-            next: (response) => {
-                if (response.isSuccess && response.value) {
-                    this.suppliers = response.value;
-                    this.supplierMap = {};
-                    this.suppliers.forEach(supplier => {
-                        this.supplierMap[supplier.idSupplier] = supplier.nameSupplier;
-                    });
-                }
-            },
-            error: (error) => this.handleError('Error al cargar proveedores', error)
-        });
-    }
-
-    private loadUnitsOfSale() {
-        this.productService.getUnitsOfSale().subscribe({
-            next: (response) => {
-                if (response.isSuccess && response.value) {
-                    this.unitsOfSale = response.value;
-                    this.unityOfSaleMap = {};
-                    this.unitsOfSale.forEach(unit => {
-                        this.unityOfSaleMap[unit.idUnitOfSale] = `${unit.unityName} (${unit.abbreviation})`;
-                    });
-                }
-            },
-            error: (error) => this.handleError('Error al cargar unidades de medida', error)
-        });
     }
 
     private setupSearch() {
@@ -270,7 +303,13 @@ export class ProductConfComponent implements OnInit {
     }
 
     getUnitOfSaleName(idUnitOfSale: number | null): string {
-        if (idUnitOfSale === null) return 'N/A';
+        if (idUnitOfSale === null || idUnitOfSale === undefined) return 'N/A';
+        
+        const unit = this.unitsOfSale.find(u => u.idUnitOfSale === idUnitOfSale);
+        if (unit) {
+            return `${unit.unityName} (${unit.abbreviation})`;
+        }
+        
         return this.unityOfSaleMap[idUnitOfSale] || 'N/A';
     }
 
@@ -312,9 +351,21 @@ export class ProductConfComponent implements OnInit {
         this.isEditing = true;
         this.currentProductId = product.idProduct;
         
-        this.newProduct = { ...product };
-        this.newProduct.imgBase64 = product.imgBase64 ?? product.picture?.replace(/^data:image\/\w+;base64,/, '') ?? null;
-        this.imagePreview = product.picture || (product.imgBase64 ? `${product.imgBase64}` : null);
+        this.newProduct = { 
+            ...product,
+            status: product.status || 'E'
+        };
+        
+        if (product.picture) {
+            this.imagePreview = product.picture;
+            this.newProduct.imgBase64 = product.picture.split(',')[1];
+        } else if (product.imgBase64) {
+            this.imagePreview = this.formatImage(product.imgBase64);
+            this.newProduct.imgBase64 = product.imgBase64;
+        } else {
+            this.imagePreview = null;
+            this.newProduct.imgBase64 = null;
+        }
 
         if (this.newProduct.dateExpire) {
             this.newProduct.dateExpire = this.formatDateForDisplay(this.newProduct.dateExpire);
@@ -344,8 +395,9 @@ export class ProductConfComponent implements OnInit {
         const reader = new FileReader();
         reader.onload = (e: ProgressEvent<FileReader>) => {
             if (e.target?.result) {
-                this.imagePreview = e.target.result as string;
-                this.newProduct.imgBase64 = (e.target.result as string).split(',')[1];
+                const result = e.target.result as string;
+                this.imagePreview = result;
+                this.newProduct.imgBase64 = result.split(',')[1];
             }
         };
         reader.readAsDataURL(file);
@@ -367,22 +419,32 @@ export class ProductConfComponent implements OnInit {
         this.isLoading = true;
         this.productService.addProduct(this.newProduct).subscribe({
             next: (response) => {
-                if (response.isSuccess && response.value) {
-                    if (response.value.imgBase64) {
-                        response.value.picture = `${response.value.imgBase64}`;
-                    }
-                    this.products.push(response.value);
-                    this.filteredProducts = [...this.products];
-                    Swal.fire('Éxito', 'Producto agregado correctamente', 'success');
-                    this.closeModal();
-                } else {
+                if (!response.isSuccess || !response.value) {
                     Swal.fire('Error', response.error || 'Error al agregar el producto', 'error');
+                    this.isLoading = false;
+                    return;
                 }
+
+                const newProduct = response.value;
+                
+                if (newProduct.imgBase64) {
+                    newProduct.picture = this.formatImage(newProduct.imgBase64);
+                }
+
+                newProduct.category = this.categories.find(c => c.idCategory === newProduct.idCategory) || null;
+                newProduct.supplier = this.suppliers.find(s => s.idSupplier === newProduct.idSupplier) || null;
+                newProduct.unitOfSale = this.unitsOfSale.find(u => u.idUnitOfSale === newProduct.idUnitOfSale) || null;
+
+                this.products.push(newProduct);
+                this.filteredProducts = [...this.products];
+                Swal.fire('Éxito', 'Producto agregado correctamente', 'success');
+                this.closeModal();
                 this.isLoading = false;
             },
             error: (error) => {
                 console.error('Error detallado:', error);
                 this.handleError('Error al agregar el producto', error);
+                this.isLoading = false;
             }
         });
     }
@@ -394,23 +456,35 @@ export class ProductConfComponent implements OnInit {
         this.productService.updateProduct(this.currentProductId, this.newProduct)
             .subscribe({
                 next: (response) => {
-                    if (response.isSuccess && response.value) {
-                        if (response.value.imgBase64) {
-                            response.value.picture = `data:image/jpeg;base64,${response.value.imgBase64}`;
-                        }
-                        const index = this.products.findIndex(p => p.idProduct === this.currentProductId);
-                        if (index !== -1) {
-                            this.products[index] = response.value;
-                            this.filteredProducts = [...this.products];
-                        }
-                        Swal.fire('Éxito', 'Producto actualizado correctamente', 'success');
-                        this.closeModal();
-                    } else {
+                    if (!response.isSuccess || !response.value) {
                         Swal.fire('Error', response.error || 'Error al actualizar el producto', 'error');
+                        this.isLoading = false;
+                        return;
                     }
+
+                    const updatedProduct = response.value;
+                    
+                    if (updatedProduct.imgBase64) {
+                        updatedProduct.picture = this.formatImage(updatedProduct.imgBase64);
+                    }
+
+                    updatedProduct.category = this.categories.find(c => c.idCategory === updatedProduct.idCategory) || null;
+                    updatedProduct.supplier = this.suppliers.find(s => s.idSupplier === updatedProduct.idSupplier) || null;
+                    updatedProduct.unitOfSale = this.unitsOfSale.find(u => u.idUnitOfSale === updatedProduct.idUnitOfSale) || null;
+
+                    const index = this.products.findIndex(p => p.idProduct === this.currentProductId);
+                    if (index !== -1) {
+                        this.products[index] = updatedProduct;
+                        this.filteredProducts = [...this.products];
+                    }
+                    Swal.fire('Éxito', 'Producto actualizado correctamente', 'success');
+                    this.closeModal();
                     this.isLoading = false;
                 },
-                error: (error) => this.handleError('Error al actualizar el producto', error)
+                error: (error) => {
+                    this.handleError('Error al actualizar el producto', error);
+                    this.isLoading = false;
+                }
             });
     }
 
