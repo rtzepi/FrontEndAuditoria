@@ -1,140 +1,151 @@
-<div class="container">
-  <button class="btn-back" (click)="goBack()">
-      <span class="material-icons">arrow_back</span>
-      Volver
-  </button>
-  
-  <div class="header">
-      <h2>Configuración de Empresa</h2>
-      <div class="header-actions">
-          <button (click)="toggleEdit()" class="btn btn-primary" [disabled]="isLoading">
-              {{ isEditing ? 'Cancelar' : 'Editar' }}
-          </button>
-      </div>
-  </div>
-
-  <div class="company-content">
-      <div class="company-form-container">
-          <form #companyForm="ngForm" (ngSubmit)="onSubmit()" class="company-form">
-              <div class="form-row">
-                  <div class="form-group">
-                      <label>Nombre de la Empresa <span class="required">*</span></label>
-                      <input type="text" [(ngModel)]="company.companyName" name="companyName" 
-                          required maxlength="{{MAX_NAME_LENGTH}}" #companyName="ngModel"
-                          [readonly]="!isEditing"
-                          (input)="handleInput('companyName', MAX_NAME_LENGTH, $event)">
-                      <div class="char-counter"
-                          [class.warning]="getRemainingChars('companyName', MAX_NAME_LENGTH) < 10"
-                          [class.danger]="getRemainingChars('companyName', MAX_NAME_LENGTH) === 0">
-                          Caracteres restantes: {{ getRemainingChars('companyName', MAX_NAME_LENGTH) }}
-                      </div>
-                      <div *ngIf="companyName.invalid && (companyName.dirty || companyName.touched)" class="error-message">
-                          Nombre de empresa es requerido
-                      </div>
-                  </div>
-                  
-                  <div class="form-group">
-                      <label>NIT <span class="required">*</span></label>
-                      <input type="text" [(ngModel)]="company.nit" name="nit"
-                          required maxlength="{{MAX_NIT_LENGTH}}" #nit="ngModel"
-                          [readonly]="!isEditing"
-                          (input)="handleInput('nit', MAX_NIT_LENGTH, $event)">
-                      <div class="char-counter"
-                          [class.warning]="getRemainingChars('nit', MAX_NIT_LENGTH) < 5"
-                          [class.danger]="getRemainingChars('nit', MAX_NIT_LENGTH) === 0">
-                          Caracteres restantes: {{ getRemainingChars('nit', MAX_NIT_LENGTH) }}
-                      </div>
-                      <div *ngIf="nit.invalid && (nit.dirty || nit.touched)" class="error-message">
-                          NIT es requerido
-                      </div>
-                  </div>
-              </div>
-
-              <div class="form-row">
-                  <div class="form-group">
-                      <label>Dirección <span class="required">*</span></label>
-                      <input type="text" [(ngModel)]="company.address" name="address" 
-                          required maxlength="{{MAX_ADDRESS_LENGTH}}" #address="ngModel"
-                          [readonly]="!isEditing"
-                          (input)="handleInput('address', MAX_ADDRESS_LENGTH, $event)">
-                      <div class="char-counter"
-                          [class.warning]="getRemainingChars('address', MAX_ADDRESS_LENGTH) < 20"
-                          [class.danger]="getRemainingChars('address', MAX_ADDRESS_LENGTH) === 0">
-                          Caracteres restantes: {{ getRemainingChars('address', MAX_ADDRESS_LENGTH) }}
-                      </div>
-                      <div *ngIf="address.invalid && (address.dirty || address.touched)" class="error-message">
-                          Dirección es requerida
-                      </div>
-                  </div>
-                  
-                  <div class="form-group">
-                      <label>Teléfono <span class="required">*</span></label>
-                      <input type="text" [(ngModel)]="company.phoneNumber" name="phoneNumber" 
-                          required pattern="[0-9]{8}" maxlength="{{MAX_PHONE_LENGTH}}" #phoneNumber="ngModel"
-                          [readonly]="!isEditing"
-                          (keypress)="validateNumber($event)"
-                          (input)="handleInput('phoneNumber', MAX_PHONE_LENGTH, $event)">
-                      <div class="char-counter"
-                          [class.warning]="getRemainingChars('phoneNumber', MAX_PHONE_LENGTH) < 2"
-                          [class.danger]="getRemainingChars('phoneNumber', MAX_PHONE_LENGTH) === 0">
-                          Caracteres restantes: {{ getRemainingChars('phoneNumber', MAX_PHONE_LENGTH) }}
-                      </div>
-                      <div *ngIf="phoneNumber.invalid && (phoneNumber.dirty || phoneNumber.touched)" class="error-message">
-                          <span *ngIf="phoneNumber.errors?.['required']">Teléfono es requerido</span>
-                          <span *ngIf="phoneNumber.errors?.['pattern']">Debe tener exactamente 8 dígitos</span>
-                      </div>
-                  </div>
-              </div>
-
-              <div class="form-group">
-                  <label>Email <span class="required">*</span></label>
-                  <input type="email" [(ngModel)]="company.email" name="email" 
-                      required email maxlength="{{MAX_EMAIL_LENGTH}}" #email="ngModel"
-                      [readonly]="!isEditing"
-                      (input)="handleInput('email', MAX_EMAIL_LENGTH, $event)">
-                  <div class="char-counter"
-                      [class.warning]="getRemainingChars('email', MAX_EMAIL_LENGTH) < 10"
-                      [class.danger]="getRemainingChars('email', MAX_EMAIL_LENGTH) === 0">
-                      Caracteres restantes: {{ getRemainingChars('email', MAX_EMAIL_LENGTH) }}
-                  </div>
-                  <div *ngIf="email.invalid && (email.dirty || email.touched)" class="error-message">
-                      <span *ngIf="email.errors?.['required']">Email es requerido</span>
-                      <span *ngIf="email.errors?.['email']">Formato de email inválido</span>
-                  </div>
-              </div>
-
-              <div class="form-group photo-upload" *ngIf="isEditing">
-                  <label>Logo de la Empresa <span class="required">*</span></label>
-                  <div class="upload-container">
-                      <div class="image-preview" *ngIf="imagePreview">
-                          <img [src]="imagePreview" alt="Vista previa del logo">
-                          <button type="button" class="btn-remove" (click)="removePhoto()" [disabled]="!isEditing">
-                              <span class="material-icons">close</span>
-                          </button>
-                      </div>
-                      <div class="upload-controls">
-                          <input type="file" id="companyLogo" (change)="handleImageUpload($event)" 
-                              accept="image/*" [disabled]="!isEditing || isLoading" hidden>
-                          <label for="companyLogo" class="btn-upload">
-                              <span class="material-icons">upload</span>
-                              {{ imagePreview ? 'Cambiar logo' : 'Subir logo' }}
-                          </label>
-                          <small>Tamaño máximo: 2MB (JPEG, PNG, JPG)</small>
-                          <div *ngIf="(formSubmitted || photoTouched) && !company.imgBase64" class="error-message">
-                              El logo de la empresa es obligatorio
-                          </div>
-                      </div>
-                  </div>
-              </div>
-
-              <div class="form-actions" *ngIf="isEditing">
-                  <button type="submit" 
-                          class="btn-submit"
-                          [disabled]="companyForm.invalid || isLoading || !company.imgBase64">
-                      {{ isLoading ? 'Guardando...' : 'Guardar Cambios' }}
-                  </button>
-              </div>
-          </form>
-      </div>
-  </div>
+<div class="company-container">
+    <button class="btn-back" (click)="goBack()">
+        <span class="material-icons">arrow_back</span>
+        Volver
+    </button>
+    
+    <div class="company-card">
+        <div class="company-header">
+            <div class="logo-container">
+                <img *ngIf="company.imgBase64" 
+                     [src]="'data:image/png;base64,' + company.imgBase64" 
+                     class="company-logo" 
+                     alt="Logo de la empresa">
+                <div *ngIf="!company.imgBase64" class="logo-placeholder">
+                    <span class="material-icons">business</span>
+                </div>
+            </div>
+            
+            <div class="company-titles">
+                <h2>{{company.companyName || 'Nombre de la empresa'}}</h2>
+                <p class="company-subtitle">Configuración de la empresa</p>
+            </div>
+            
+            <button (click)="openEditModal()" 
+                    class="btn-primary" 
+                    [disabled]="isLoading">
+                Editar
+            </button>
+        </div>
+        
+        <div class="company-info">
+            <div class="info-row">
+                <span class="info-label">NIT:</span>
+                <span class="info-value">{{company.nit || 'No especificado'}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Dirección:</span>
+                <span class="info-value">{{company.address || 'No especificada'}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Teléfono:</span>
+                <span class="info-value">{{company.phoneNumber || 'No especificado'}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Email:</span>
+                <span class="info-value">{{company.email || 'No especificado'}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Estado:</span>
+                <span class="info-value">{{company.status === 'A' ? 'Activo' : 'Inactivo'}}</span>
+            </div>
+        </div>
+    </div>
 </div>
+
+<div *ngIf="showModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>Editar Información de la Empresa</h2>
+        
+        <form class="company-form" (ngSubmit)="saveCompany()">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nombre de la Empresa <span class="required">*</span></label>
+                    <input type="text" [(ngModel)]="tempCompany.companyName" name="companyName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>NIT <span class="required">*</span></label>
+                    <input type="text" [(ngModel)]="tempCompany.nit" name="nit" required
+                           maxlength="{{MAX_NIT_LENGTH}}"
+                           (input)="handleInput('nit', MAX_NIT_LENGTH, $event)">
+                    <div class="char-counter">
+                        Caracteres restantes: {{ MAX_NIT_LENGTH - (tempCompany.nit?.length || 0) }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Dirección <span class="required">*</span></label>
+                    <input type="text" [(ngModel)]="tempCompany.address" name="address" required
+                           maxlength="{{MAX_ADDRESS_LENGTH}}"
+                           (input)="handleInput('address', MAX_ADDRESS_LENGTH, $event)">
+                    <div class="char-counter">
+                        Caracteres restantes: {{ MAX_ADDRESS_LENGTH - (tempCompany.address?.length || 0) }}
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Teléfono <span class="required">*</span></label>
+                    <input type="text" [(ngModel)]="tempCompany.phoneNumber" name="phoneNumber" required
+                           maxlength="{{MAX_PHONE_LENGTH}}"
+                           (keypress)="validateNumber($event)"
+                           (input)="handleInput('phoneNumber', MAX_PHONE_LENGTH, $event)">
+                    <div *ngIf="formSubmitted && tempCompany.phoneNumber?.length !== MAX_PHONE_LENGTH" 
+                         class="error-message">
+                        El teléfono debe tener exactamente {{MAX_PHONE_LENGTH}} dígitos
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Email <span class="required">*</span></label>
+                <input type="email" [(ngModel)]="tempCompany.email" name="email" required
+                       maxlength="{{MAX_EMAIL_LENGTH}}"
+                       (input)="handleInput('email', MAX_EMAIL_LENGTH, $event)">
+                <div class="char-counter">
+                    Caracteres restantes: {{ MAX_EMAIL_LENGTH - (tempCompany.email?.length || 0) }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Logo de la Empresa <span class="required">*</span></label>
+                <div class="upload-container">
+                    <div class="image-preview">
+                        <img *ngIf="tempCompany.imgBase64" 
+                             [src]="'data:image/png;base64,' + tempCompany.imgBase64" 
+                             alt="Vista previa del logo">
+                        <div *ngIf="!tempCompany.imgBase64" class="logo-placeholder">
+                            <span class="material-icons">business</span>
+                        </div>
+                    </div>
+                    
+                    <div class="upload-controls">
+                        <input type="file" id="companyLogo" 
+                               (change)="onImageUpload($event)" 
+                               accept="image/*" hidden>
+                        <label for="companyLogo" class="btn-upload">
+                            <span class="material-icons">upload</span>
+                            Cambiar logo
+                        </label>
+                        <small>Tamaño máximo: 2MB (JPEG, PNG, JPG)</small>
+                        <div *ngIf="formSubmitted && !tempCompany.imgBase64" class="error-message">
+                            El logo de la empresa es obligatorio
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit" [disabled]="isLoading">
+                    {{ isLoading ? 'Guardando...' : 'Guardar Cambios' }}
+                </button>
+                <button type="button" class="btn-cancel" (click)="cancelEdit()" [disabled]="isLoading">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
