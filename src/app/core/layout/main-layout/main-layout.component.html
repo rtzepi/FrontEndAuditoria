@@ -23,13 +23,12 @@
             <span class="spacer"></span>
             
             <div class="notification-container">
-                <button mat-icon-button [matMenuTriggerFor]="notificationsMenu" 
-                        (click)="markNotificationsAsRead()"
+                <button mat-icon-button [matMenuTriggerFor]="notificationsMenu"
                         class="notification-btn">
-                    <mat-icon [matBadge]="unreadNotificationsCount" 
+                    <mat-icon [matBadge]="notifications.length" 
                              matBadgeColor="warn" 
                              matBadgeSize="small"
-                             [class.has-unread]="unreadNotificationsCount > 0">
+                             [class.has-unread]="notifications.length > 0">
                         notifications
                     </mat-icon>
                 </button>
@@ -40,44 +39,31 @@
                             <mat-icon>notifications_active</mat-icon>
                             <h3>Notificaciones Recientes</h3>
                         </div>
-                        <span class="unread-count" *ngIf="unreadNotificationsCount > 0">
-                            {{unreadNotificationsCount}} no leídas
+                        <span class="unread-count" *ngIf="notifications.length > 0">
+                            {{notifications.length}} notificaciones
                         </span>
                     </div>
                     
                     <div class="notifications-list">
-                        <div *ngFor="let notification of notifications" class="notification-item"
-                             [class.unread]="!notification.isRead">
-                            <div class="notification-content" (click)="handleNotificationClick(notification)">
-                                <div class="notification-icon" [ngClass]="notification.type || 'default'">
-                                    <mat-icon>{{notification.icon || 'notifications'}}</mat-icon>
+                        <div *ngFor="let notification of notifications" class="notification-item">
+                            <div class="notification-content" (click)="handleNotificationClick()">
+                                <div class="notification-icon warning">
+                                    <mat-icon>warning</mat-icon>
                                 </div>
                                 <div class="notification-details">
                                     <div class="notification-title">{{notification.title}}</div>
                                     <div class="notification-message">{{notification.message}}</div>
                                     <div class="notification-footer">
                                         <span class="notification-time">{{notification.time | date:'shortTime'}}</span>
-                                        <span class="notification-badge" *ngIf="!notification.isRead">Nuevo</span>
                                     </div>
                                 </div>
                             </div>
-                            <button mat-icon-button class="delete-btn" 
-                                    (click)="deleteNotification(notification.id, $event)">
-                                <mat-icon>close</mat-icon>
-                            </button>
                         </div>
                         
                         <div class="empty-state" *ngIf="notifications.length === 0">
                             <mat-icon>notifications_off</mat-icon>
                             <p>No hay notificaciones nuevas</p>
                         </div>
-                    </div>
-                    
-                    <div class="notifications-footer" *ngIf="notifications.length > 0">
-                        <button mat-button (click)="clearAllNotifications()">
-                            <mat-icon>delete_sweep</mat-icon>
-                            Limpiar todo
-                        </button>
                     </div>
                 </mat-menu>
             </div>

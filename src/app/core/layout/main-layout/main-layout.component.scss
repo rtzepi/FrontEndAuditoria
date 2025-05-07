@@ -1,4 +1,4 @@
-
+/* Estilos generales del layout */
 .container {
   height: 100vh;
 }
@@ -9,8 +9,8 @@
   color: white;
   display: flex;
   flex-direction: column;
-  overflow-y: hidden; 
-  height: 100vh; 
+  overflow-y: hidden;
+  height: 100vh;
 
   mat-icon {
     margin-right: 10px;
@@ -243,7 +243,7 @@
       &.unread {
         background-color: rgba(67, 97, 238, 0.05);
         
-        .notification-content::before {
+        &::before {
           content: '';
           position: absolute;
           left: 0;
@@ -257,10 +257,6 @@
       
       &:hover {
         background-color: #f9f9f9;
-        
-        .delete-btn {
-          opacity: 1;
-        }
       }
       
       .notification-content {
@@ -268,7 +264,6 @@
         display: flex;
         padding: 8px 0;
         cursor: pointer;
-        position: relative;
         
         .notification-icon {
           width: 40px;
@@ -338,19 +333,6 @@
               border-radius: 10px;
             }
           }
-        }
-      }
-      
-      .delete-btn {
-        opacity: 0;
-        transition: all 0.3s ease;
-        color: #999;
-        width: 32px;
-        height: 32px;
-        
-        &:hover {
-          color: #f72585;
-          background-color: rgba(247, 37, 133, 0.1);
         }
       }
     }

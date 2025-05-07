@@ -21,9 +21,8 @@ interface INotification {
   message: string;
   icon?: string;
   time: Date;
-  isRead: boolean;
   type?: 'default' | 'warning' | 'success' | 'info';
-  route?: string;
+  data?: any;
 }
 
 @Component({
@@ -49,16 +48,10 @@ interface INotification {
 })
 export class MainLayoutComponent implements OnInit {
   menuItems: any = [];
-  profileData: IProfile = {
-    firstName: '',
-    fatherLastName: '',
-    roleName: '',
-    picture: ''
-  };
+  profileData: any = {};
   defaultAvatar = '/img/CONDOR.jpeg';
   isMenuOpen = signal(true);
   notifications: INotification[] = [];
-  unreadNotificationsCount = 0;
 
   constructor(
     private authS: AuthService,
@@ -71,9 +64,7 @@ export class MainLayoutComponent implements OnInit {
   ngOnInit(): void {
     this.loadMenus();
     this.loadProfile();
-    this.loadNotifications();
-    
-    setInterval(() => this.loadNotifications(), 30000);
+    this.setupNotificationCheck();
   }
 
   loadMenus(): void {
@@ -95,6 +86,7 @@ export class MainLayoutComponent implements OnInit {
       next: (response: IProfileResponse) => {
         if (response.isSuccess && response.value) {
           this.profileData = response.value;
+          this.checkForNotifications();
         }
       },
       error: (error) => {
@@ -104,108 +96,18 @@ export class MainLayoutComponent implements OnInit {
     });
   }
 
-  loadNotifications(): void {
-    this.notificationsService.getNotifications().subscribe({
-      next: (notifications) => {
-        this.notifications = notifications;
-        this.unreadNotificationsCount = notifications.filter(n => !n.isRead).length;
-      },
-      error: (error) => {
-        console.error('Error cargando notificaciones:', error);
-        this.loadSampleNotifications();
-      }
-    });
+  setupNotificationCheck(): void {
+    setInterval(() => this.checkForNotifications(), 30000);
   }
 
-  private loadSampleNotifications(): void {
-    this.notifications = [
-      {
-        id: 1,
-        title: 'Productos bajo en existencia',
-        message: 'El producto "Martillo Metal" tiene bajo stock (2 unidades restantes)',
-        icon: 'warning',
-        time: new Date(Date.now() - 1000 * 60 * 5),
-        isRead: false,
-        type: 'warning'
-      },
-      {
-        id: 2,
-        title: 'Nuevo pedido recibido',
-        message: 'Se ha recibido un nuevo pedido #45678 de $1,250.00',
-        icon: 'shopping_cart',
-        time: new Date(Date.now() - 1000 * 60 * 30),
-        isRead: false,
-        type: 'success'
-      },
-      {
-        id: 3,
-        title: 'Actualización del sistema',
-        message: 'Nueva versión disponible (v2.3.1)',
-        icon: 'system_update',
-        time: new Date(Date.now() - 1000 * 60 * 60 * 2),
-        isRead: true,
-        type: 'info'
-      }
-    ];
-    this.unreadNotificationsCount = this.notifications.filter(n => !n.isRead).length;
-  }
-
-  markNotificationsAsRead(): void {
-    const unreadIds = this.notifications
-      .filter(n => !n.isRead)
-      .map(n => n.id);
-    
-    if (unreadIds.length > 0) {
-      this.notificationsService.markAsRead(unreadIds).subscribe({
-        next: () => {
-          this.notifications = this.notifications.map(n => ({
-            ...n,
-            isRead: true
-          }));
-          this.unreadNotificationsCount = 0;
-        },
-        error: (error) => {
-          console.error('Error marcando notificaciones como leídas:', error);
-        }
-      });
+  checkForNotifications(): void {
+    if (this.profileData?.notifyList) {
+      this.notifications = this.notificationsService.transformNotifications(this.profileData.notifyList);
     }
   }
 
-  handleNotificationClick(notification: INotification): void {
-    if (!notification.isRead) {
-      notification.isRead = true;
-      this.unreadNotificationsCount--;
-      this.notificationsService.markAsRead([notification.id]).subscribe();
-    }
-  }
-
-  deleteNotification(id: number, event: Event): void {
-    event.stopPropagation();
-    this.notificationsService.deleteNotification(id).subscribe({
-      next: () => {
-        this.notifications = this.notifications.filter(n => n.id !== id);
-        this.unreadNotificationsCount = this.notifications.filter(n => !n.isRead).length;
-        this.showSuccess('Notificación eliminada');
-      },
-      error: (error) => {
-        console.error('Error eliminando notificación:', error);
-        this.showError('Error al eliminar notificación');
-      }
-    });
-  }
-
-  clearAllNotifications(): void {
-    this.notificationsService.clearAllNotifications().subscribe({
-      next: () => {
-        this.notifications = [];
-        this.unreadNotificationsCount = 0;
-        this.showSuccess('Todas las notificaciones fueron eliminadas');
-      },
-      error: (error) => {
-        console.error('Error eliminando notificaciones:', error);
-        this.showError('Error al eliminar notificaciones');
-      }
-    });
+  handleNotificationClick(): void {
+    // No hacer nada al hacer clic
   }
 
   getProfileImage(): string {
