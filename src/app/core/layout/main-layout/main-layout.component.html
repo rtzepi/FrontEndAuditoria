@@ -37,7 +37,7 @@
                     <div class="notifications-header">
                         <div class="header-title">
                             <mat-icon>notifications_active</mat-icon>
-                            <h3>Notificaciones Recientes</h3>
+                            <h3>Notificaciones</h3>
                         </div>
                         <span class="unread-count" *ngIf="notifications.length > 0">
                             {{notifications.length}} notificaciones
@@ -46,16 +46,13 @@
                     
                     <div class="notifications-list">
                         <div *ngFor="let notification of notifications" class="notification-item">
-                            <div class="notification-content" (click)="handleNotificationClick()">
+                            <div class="notification-content">
                                 <div class="notification-icon warning">
                                     <mat-icon>warning</mat-icon>
                                 </div>
                                 <div class="notification-details">
                                     <div class="notification-title">{{notification.title}}</div>
                                     <div class="notification-message">{{notification.message}}</div>
-                                    <div class="notification-footer">
-                                        <span class="notification-time">{{notification.time | date:'shortTime'}}</span>
-                                    </div>
                                 </div>
                             </div>
                         </div>
