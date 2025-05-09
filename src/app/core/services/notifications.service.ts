@@ -26,7 +26,7 @@ export class NotificationsService {
         return group.productosEnStockMin.map((product: any, index: number) => ({
           id: groupIndex * 1000 + index,
           title: product.titulo || 'Producto bajo en stock',
-          message: `${product.nombre} - Stock actual: ${product.stockActual} (Mínimo requerido: ${product.stockMin})`,
+          message: `${product.nombre} (ID: ${product.idProduct}) - Stock actual: ${product.stockActual} (Mínimo requerido: ${product.stockMin})`,
           icon: 'warning',
           time: new Date(),
           type: 'warning',

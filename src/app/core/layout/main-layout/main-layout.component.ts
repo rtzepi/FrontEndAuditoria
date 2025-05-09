@@ -107,7 +107,7 @@ export class MainLayoutComponent implements OnInit {
   }
 
   handleNotificationClick(): void {
-    // No hacer nada al hacer clic
+
   }
 
   getProfileImage(): string {

@@ -7,12 +7,19 @@ import { environment } from '../../../../environments/environment.development';
 import { InputSearchComponent } from '../../../../shared/components/input-search/input-search.component';
 
 interface Orden {
+  idOrder: number;
+  dateOrder: string;
+  status: string;
+  totalAmount: number;
+  dumpValue?: number;
+  created_at?: string;
+  updated_at?: string | null;
   id: number;
-  usuario: string;
-  proveedor: string;
   fechaCompra: string;
   total: number;
   estado: string;
+  usuario: string;
+  proveedor: string;
 }
 
 interface DetalleOrden {
@@ -52,13 +59,19 @@ export class PurchaseHistoryComponent implements OnInit {
 
   cargarOrdenes(): void {
     this.cargando = true;
-    this.http.get<any>(`${environment.baseUrlApi}/Order/List`).subscribe({
+    this.http.get<any>(`${environment.baseUrlApi || 'https://localhost:7124'}/Order/List`).subscribe({
       next: (respuesta) => {
-        if (respuesta.isSuccess) {
-          this.ordenes = respuesta.value || [];
+        if (respuesta && respuesta.value) {
+          this.ordenes = respuesta.value.map((orden: any) => ({
+            ...orden,
+            id: orden.idOrder,
+            fechaCompra: orden.dateOrder,
+            total: orden.totalAmount,
+            estado: this.mapStatus(orden.status),
+            usuario: `Usuario ${orden.idOrder}`,
+            proveedor: `Proveedor ${orden.dumpValue || 1}`
+          }));
           this.ordenesFiltradas = [...this.ordenes];
-        } else {
-          console.error('Error al cargar órdenes:', respuesta.errors);
         }
         this.cargando = false;
       },
@@ -68,7 +81,16 @@ export class PurchaseHistoryComponent implements OnInit {
       }
     });
   }
-  
+
+  private mapStatus(status: string): string {
+    switch(status) {
+      case 'R': return 'Recibido';
+      case 'P': return 'Procesando';
+      case 'E': return 'Entregado';
+      case 'C': return 'Cancelado';
+      default: return status;
+    }
+  }
 
   configurarBusqueda(): void {
     this.busquedaSubject.pipe(
@@ -93,9 +115,9 @@ export class PurchaseHistoryComponent implements OnInit {
     
     const termino = this.terminoBusqueda.toLowerCase();
     this.ordenesFiltradas = this.ordenes.filter(orden => 
-      orden.usuario?.toLowerCase().includes(termino) ||
-      orden.proveedor?.toLowerCase().includes(termino) ||
-      orden.id?.toString().includes(termino)
+      orden.usuario.toLowerCase().includes(termino) ||
+      orden.proveedor.toLowerCase().includes(termino) ||
+      orden.idOrder.toString().includes(termino)
     );
   }
 
@@ -118,15 +140,8 @@ export class PurchaseHistoryComponent implements OnInit {
 
   verDetalles(orden: Orden): void {
     this.ordenSeleccionada = orden;
-    this.cargarDetallesOrden(orden.id);
-  }
-
-  cargarDetallesOrden(idOrden: number): void {
-    this.cargando = true;
-  
-    this.detallesOrden = [];
     this.mostrarModalDetalles = true;
-    this.cargando = false;
+    this.detallesOrden = [];
   }
 
   cerrarModalDetalles(): void {
