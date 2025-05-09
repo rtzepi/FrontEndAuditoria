@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Location } from '@angular/common';
-import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
-import { CashService, CashSession, DailyTransaction, CashSessionCloseRequest, Response } from '../../../../core/services/cash.service';
+import { CashService, DailyTransaction, CashSessionCloseRequest, Response } from '../../../../core/services/cash.service';
 
 @Component({
   selector: 'app-cash-closing',
@@ -11,7 +11,7 @@ import { CashService, CashSession, DailyTransaction, CashSessionCloseRequest, Re
   imports: [CommonModule, FormsModule],
   templateUrl: './cash-closing.component.html',
   styleUrls: ['./cash-closing.component.scss'],
-  providers: [CurrencyPipe, DatePipe]
+  providers: [DatePipe]
 })
 export class CashClosingComponent implements OnInit {
   transactions: DailyTransaction[] = [];
@@ -27,7 +27,6 @@ export class CashClosingComponent implements OnInit {
   constructor(
     private cashService: CashService,
     private location: Location,
-    private currencyPipe: CurrencyPipe,
     private datePipe: DatePipe
   ) {}
 
@@ -98,7 +97,7 @@ export class CashClosingComponent implements OnInit {
     if (difference !== 0) {
       const confirm = await Swal.fire({
         title: '¿Continuar con diferencia?',
-        html: `Existe una diferencia de <strong>${this.currencyPipe.transform(Math.abs(difference))}</strong>`,
+        html: `Existe una diferencia de <strong>Q${Math.abs(difference).toFixed(2)}</strong>`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Sí, continuar',

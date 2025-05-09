@@ -25,15 +25,15 @@
             <div class="card-body">
                 <div class="summary-row">
                     <span>Total Ingresos:</span>
-                    <strong class="income">{{ getTotalIncome() | currency }}</strong>
+                    <strong class="income">Q{{ getTotalIncome() | number:'1.2-2' }}</strong>
                 </div>
                 <div class="summary-row">
                     <span>Total Egresos:</span>
-                    <strong class="expense">{{ getTotalExpenses() | currency }}</strong>
+                    <strong class="expense">Q{{ getTotalExpenses() | number:'1.2-2' }}</strong>
                 </div>
                 <div class="summary-row total">
                     <span>Monto Esperado:</span>
-                    <strong>{{ calculateExpectedAmount() | currency }}</strong>
+                    <strong>Q{{ calculateExpectedAmount() | number:'1.2-2' }}</strong>
                 </div>
             </div>
         </div>
@@ -56,7 +56,7 @@
                         <div class="transaction-header">
                             <span class="transaction-type">{{ getTransactionType(trx.trnType) }}</span>
                             <span class="transaction-amount" [ngClass]="trx.trnType === 'Ingreso' ? 'income' : 'expense'">
-                                {{ trx.trnType === 'Ingreso' ? '+' : '-' }}{{ trx.amount | currency }}
+                                {{ trx.trnType === 'Ingreso' ? '+' : '-' }}Q{{ trx.amount | number:'1.2-2' }}
                             </span>
                         </div>
                         <p class="transaction-description">{{ trx.description || 'Sin descripción' }}</p>
@@ -123,7 +123,7 @@
                     'positive': getDifference() >= 0,
                     'negative': getDifference() < 0
                 }">
-                    {{ getDifference() | currency }}
+                    Q{{ getDifference() | number:'1.2-2' }}
                 </strong>
             </div>
 

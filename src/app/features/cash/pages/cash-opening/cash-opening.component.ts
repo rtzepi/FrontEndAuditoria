@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import Swal from 'sweetalert2';
-import { CashService, CashSession, CashSessionOpenRequest, Response } from '../../../../core/services/cash.service';
+import { CashService, CashSessionOpenRequest, Response } from '../../../../core/services/cash.service';
 
 @Component({
   selector: 'app-cash-opening',
@@ -11,7 +11,7 @@ import { CashService, CashSession, CashSessionOpenRequest, Response } from '../.
   imports: [CommonModule, FormsModule],
   templateUrl: './cash-opening.component.html',
   styleUrls: ['./cash-opening.component.scss'],
-  providers: [CurrencyPipe, DatePipe]
+  providers: [DatePipe]
 })
 export class CashOpeningComponent implements OnInit {
   openingAmount: number = 0;
@@ -21,7 +21,6 @@ export class CashOpeningComponent implements OnInit {
   constructor(
     private cashService: CashService,
     private location: Location,
-    private currencyPipe: CurrencyPipe,
     private datePipe: DatePipe
   ) {}
 
@@ -40,7 +39,7 @@ export class CashOpeningComponent implements OnInit {
       const response = await this.cashService.openCashSession(request).toPromise();
       
       if (response?.isSuccess) {
-        const formattedAmount = this.currencyPipe.transform(this.openingAmount);
+        const formattedAmount = `Q${this.openingAmount.toFixed(2)}`;
         await Swal.fire({
           title: '¡Apertura exitosa!',
           html: `Sesión de caja abierta con <strong>${formattedAmount}</strong>`,
