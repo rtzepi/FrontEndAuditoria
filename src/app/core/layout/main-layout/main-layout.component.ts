@@ -64,7 +64,6 @@ export class MainLayoutComponent implements OnInit {
   ngOnInit(): void {
     this.loadMenus();
     this.loadProfile();
-    this.setupNotificationCheck();
   }
 
   loadMenus(): void {
@@ -86,6 +85,7 @@ export class MainLayoutComponent implements OnInit {
       next: (response: IProfileResponse) => {
         if (response.isSuccess && response.value) {
           this.profileData = response.value;
+          console.log('Perfil cargado:', this.profileData);
           this.checkForNotifications();
         }
       },
@@ -96,9 +96,6 @@ export class MainLayoutComponent implements OnInit {
     });
   }
 
-  setupNotificationCheck(): void {
-    setInterval(() => this.checkForNotifications(), 30000);
-  }
 
   checkForNotifications(): void {
     if (this.profileData?.notifyList) {
@@ -106,9 +103,13 @@ export class MainLayoutComponent implements OnInit {
     }
   }
 
+<<<<<<< HEAD
   handleNotificationClick(): void {
 
   }
+=======
+
+>>>>>>> 1ccb8ecde70305024764100ecc2fe6fa8258863d
 
   getProfileImage(): string {
     return this.profileData.picture || this.defaultAvatar;
@@ -131,15 +132,7 @@ export class MainLayoutComponent implements OnInit {
   }
 
   logout(): void {
-    this.authS.logout().subscribe({
-      next: () => {
-        this.showSuccess('Sesión cerrada correctamente');
-      },
-      error: (error) => {
-        console.error('Error al cerrar sesión:', error);
-        this.showError('Se produjo un error al cerrar sesión');
-      }
-    });
+    this.authS.clearAuthData();
   }
 
   private showSuccess(message: string): void {
