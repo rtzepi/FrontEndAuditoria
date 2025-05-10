@@ -45,21 +45,15 @@
                     </div>
                     
                     <div class="notifications-list">
-<<<<<<< HEAD
+
                         <div *ngFor="let notification of notifications" 
                              class="notification-item"
                              [class.warning]="notification.type === 'warning'"
                              [class.success]="notification.type === 'success'"
                              [class.info]="notification.type === 'info'">
-                            <div class="notification-content" (click)="handleNotificationClick()">
+                            <div class="notification-content">
                                 <div class="notification-icon {{notification.type || 'default'}}">
                                     <mat-icon>{{notification.icon || 'notifications'}}</mat-icon>
-=======
-                        <div *ngFor="let notification of notifications" class="notification-item">
-                            <div class="notification-content">
-                                <div class="notification-icon warning">
-                                    <mat-icon>warning</mat-icon>
->>>>>>> 1ccb8ecde70305024764100ecc2fe6fa8258863d
                                 </div>
                                 <div class="notification-details">
                                     <div class="notification-title">{{notification.title}}</div>

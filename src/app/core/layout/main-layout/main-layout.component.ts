@@ -103,13 +103,6 @@ export class MainLayoutComponent implements OnInit {
     }
   }
 
-<<<<<<< HEAD
-  handleNotificationClick(): void {
-
-  }
-=======
-
->>>>>>> 1ccb8ecde70305024764100ecc2fe6fa8258863d
 
   getProfileImage(): string {
     return this.profileData.picture || this.defaultAvatar;
