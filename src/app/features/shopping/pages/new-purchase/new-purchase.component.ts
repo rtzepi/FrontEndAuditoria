@@ -13,11 +13,10 @@ import {
     ISupplier,
     IProduct,
     ISupplierResponse,
-    IProductResponse,
+    IInventoryResponse,
     IOrderStatusRequest,
     IOrderReceiveRequest,
-    IOrderDetail,
-    IProductsBySupplierResponse
+    IOrderDetail
 } from '../../../../shared/models/INewPurchase';
 import Swal from 'sweetalert2';
 import { InputSearchComponent } from '../../../../shared/components/input-search/input-search.component';
@@ -179,10 +178,10 @@ export class NewPurchaseComponent implements OnInit {
       });
 
       this.purchaseService.getProducts().subscribe({
-        next: (response: IProductResponse) => {
+        next: (response: IInventoryResponse) => {
           if (response.isSuccess && response.value) {
             this.products = Array.isArray(response.value) ? response.value : [response.value];
-            this.filteredProducts = [...this.products];
+            this.filteredProducts = [];
             this.productMap = this.products.reduce((map, product) => {
               map[product.idProduct] = product;
               return map;
@@ -438,21 +437,13 @@ export class NewPurchaseComponent implements OnInit {
     onSupplierChange(): void {
       if (this.selectedSupplierId) {
         this.isLoading = true;
-        this.purchaseService.getProductsBySupplier(this.selectedSupplierId).subscribe({
-          next: (response: IProductsBySupplierResponse) => {
-            if (response.isSuccess && response.value) {
-              this.filteredProducts = Array.isArray(response.value) ? response.value : [response.value];
-              this.checkLowStockProducts();
-            }
-            this.isLoading = false;
-          },
-          error: (error) => {
-            this.handleError('Error al cargar productos del proveedor', error);
-            this.isLoading = false;
-          }
-        });
+        this.filteredProducts = this.products.filter(
+          product => product.idSupplier === this.selectedSupplierId
+        );
+        this.checkLowStockProducts();
+        this.isLoading = false;
       } else {
-        this.filteredProducts = [...this.products];
+        this.filteredProducts = [];
         this.productosBajoStock = [];
       }
       this.selectedProductId = null;
@@ -844,7 +835,7 @@ export class NewPurchaseComponent implements OnInit {
       this.selectedProductId = null;
       this.quantity = 1;
       this.orderDescription = '';
-      this.filteredProducts = [...this.products];
+      this.filteredProducts = [];
       this.productosBajoStock = [];
       this.currentReceivePage = 1;
     }
@@ -859,6 +850,7 @@ export class NewPurchaseComponent implements OnInit {
       this.location.back();
     }
 }
+
 
 
 
@@ -878,7 +870,7 @@ export class NewPurchaseComponent implements OnInit {
 //     ISupplier,
 //     IProduct,
 //     ISupplierResponse,
-//     IProductResponse,
+//     IInventoryResponse,
 //     IOrderStatusRequest,
 //     IOrderReceiveRequest,
 //     IOrderDetail
@@ -934,12 +926,10 @@ export class NewPurchaseComponent implements OnInit {
 //     searchTerm = '';
 //     searchSubject = new Subject<string>();
 
-//     // Variable para controlar el estado del menú
 //     isMenuHidden = false;
   
 //     supplierMap: { [key: number]: ISupplier } = {};
 //     productMap: { [key: number]: IProduct } = {};
-//     // Mapa para rastrear productos en órdenes activas
 //     productInActiveOrdersMap: { [key: number]: boolean } = {};
   
 //     constructor(
@@ -953,12 +943,10 @@ export class NewPurchaseComponent implements OnInit {
 //       this.setupSearch();
 //     }
 
-//     // Método para verificar si hay algún modal abierto
 //     get isAnyModalOpen(): boolean {
 //         return this.showOrderModal || this.showStatusModal || this.showReceiveModal;
 //     }
 
-//     // Escuchar eventos de teclado para cerrar modales con ESC
 //     @HostListener('document:keydown.escape', ['$event'])
 //     handleKeyboardEvent(event: KeyboardEvent) {
 //         if (this.showOrderModal) {
@@ -970,25 +958,20 @@ export class NewPurchaseComponent implements OnInit {
 //         }
 //     }
 
-//     // Método para verificar si un producto está en órdenes activas
 //     isProductInActiveOrders(productId: number): boolean {
 //       return this.productInActiveOrdersMap[productId] || false;
 //     }
 
-//     // Actualizar el mapa de productos en órdenes activas
 //     private updateProductInActiveOrdersMap(): void {
 //       this.productInActiveOrdersMap = {};
       
-//       // Filtrar órdenes que no están canceladas o recibidas
 //       const activeOrders = this.orders.filter(order => 
 //         order.status !== 'C' && order.status !== 'R'
 //       );
 
-//       // Recorrer todas las órdenes activas
 //       activeOrders.forEach(order => {
 //         if (order.products) {
 //           order.products.forEach(product => {
-//             // Marcar el producto como en una orden activa
 //             this.productInActiveOrdersMap[product.idProduct] = true;
 //           });
 //         }
@@ -1031,7 +1014,6 @@ export class NewPurchaseComponent implements OnInit {
 //                 this.loadOrderProducts(order.idOrder);
 //               }
 //             });
-//             // Actualizar el mapa de productos en órdenes activas
 //             this.updateProductInActiveOrdersMap();
 //           }
 //           this.isLoading = false;
@@ -1052,8 +1034,9 @@ export class NewPurchaseComponent implements OnInit {
 //         error: (error) => this.handleError('Error al cargar proveedores', error)
 //       });
 
-//       this.purchaseService.getProducts().subscribe({
-//         next: (response: IProductResponse) => {
+//       // Cargar productos de la categoría de compras (id=1)
+//       this.purchaseService.getProductsByCategory(1).subscribe({
+//         next: (response: IInventoryResponse) => {
 //           if (response.isSuccess && response.value) {
 //             this.products = Array.isArray(response.value) ? response.value : [response.value];
 //             this.filteredProducts = [...this.products];
@@ -1077,7 +1060,6 @@ export class NewPurchaseComponent implements OnInit {
 //               this.filteredOrders = this.orders.filter(order => 
 //                 order.status !== 'C' && order.status !== 'R'
 //               );
-//               // Actualizar el mapa después de cargar los productos de la orden
 //               this.updateProductInActiveOrdersMap();
 //             }
 //           }
@@ -1226,7 +1208,9 @@ export class NewPurchaseComponent implements OnInit {
 //               isExpire: detail.isExpire || false,
 //               stockMin: detail.stockMin || 0,
 //               productDescription: detail.productDescription,
-//               status: detail.status || 'A'
+//               status: detail.status || 'A',
+//               priceBuyInven: detail.priceBuyInven,
+//               salePriceaInve: detail.salePriceaInve
 //             }));
 //             this.onSupplierChange();
 //             this.cdr.detectChanges();
@@ -1264,8 +1248,8 @@ export class NewPurchaseComponent implements OnInit {
 //               idProduct: detail.idProduct,
 //               nameProduct: detail.productName || this.getProductById(detail.idProduct)?.nameProduct || 'Producto desconocido',
 //               quantity: detail.quantity,
-//               priceBuy: detail.priceBuy,
-//               salePrice: detail.priceBuy * 1.2, // 20% de margen por defecto para evitar perdidas
+//               priceBuy: detail.priceBuyInven || detail.priceBuy,
+//               salePrice: detail.salePriceaInve || detail.priceBuy * 1.2,
 //               idOrderDetail: detail.idOrderDetail,
 //               subtotal: detail.subtotal,
 //               isExpire: detail.isExpire || false,
@@ -1303,7 +1287,6 @@ export class NewPurchaseComponent implements OnInit {
 //       this.updateMenuVisibility();
 //     }
 
-//     // Método para actualizar la visibilidad del menú
 //     private updateMenuVisibility(): void {
 //       this.isMenuHidden = this.isAnyModalOpen;
 //       this.cdr.detectChanges();
@@ -1311,10 +1294,14 @@ export class NewPurchaseComponent implements OnInit {
 
 //     onSupplierChange(): void {
 //       if (this.selectedSupplierId) {
-//         this.filteredProducts = this.products.filter(
+//         this.isLoading = true;
+//         // Obtener productos del proveedor seleccionado
+//         const supplierProducts = this.products.filter(
 //           product => product.idSupplier === this.selectedSupplierId
 //         );
+//         this.filteredProducts = supplierProducts;
 //         this.checkLowStockProducts();
+//         this.isLoading = false;
 //       } else {
 //         this.filteredProducts = [...this.products];
 //         this.productosBajoStock = [];
@@ -1349,7 +1336,6 @@ export class NewPurchaseComponent implements OnInit {
 //         return;
 //       }
 
-//       // Verificar si el producto ya está en una orden activa
 //       if (this.isProductInActiveOrders(this.selectedProductId)) {
 //         Swal.fire('Error', 'Este producto ya está incluido en una orden activa (no cancelada ni recibida). No puede agregarlo a otra orden hasta que la orden actual sea cancelada o recibida.', 'error');
 //         return;
@@ -1367,11 +1353,13 @@ export class NewPurchaseComponent implements OnInit {
 //           idProduct: product.idProduct,
 //           nameProduct: product.nameProduct || 'Sin nombre',
 //           quantity: this.quantity,
-//           priceBuy: product.priceBuy || 0,
+//           priceBuy: product.priceBuyInven || product.priceBuy || 0,
 //           salePrice: 0,
 //           isExpire: product.isExpire || false,
 //           stockMin: product.stockMin || 0,
-//           productDescription: product.description || null
+//           productDescription: product.description || null,
+//           priceBuyInven: product.priceBuyInven,
+//           salePriceaInve: product.salePriceaInve
 //         });
 //       }
 

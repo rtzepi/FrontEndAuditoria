@@ -238,7 +238,7 @@ tr:hover {
     background-color: white;
     padding: 2rem;
     border-radius: 8px;
-    width: 90%;
+    width: 50%;
     max-width: 900px;
     max-height: 90vh;
     overflow-y: auto;
@@ -316,6 +316,7 @@ tr:hover {
         color: white;
         border: none;
         padding: 0 1rem;
+        margin: 0 15px;
         border-radius: 4px;
         cursor: pointer;
         transition: background-color 0.3s;

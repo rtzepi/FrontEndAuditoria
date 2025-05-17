@@ -230,3 +230,238 @@
         </div>
     </div>
 </div>
+
+
+
+<!-- <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+<div class="sales-container">
+    <div class="sidebar">
+        <h2>Nueva venta</h2>
+        
+        <div class="sale-details" *ngIf="cartItems.length > 0; else emptyCart">
+            <div class="product-item" *ngFor="let item of paginatedCartItems" (click)="openEditItemModal(item)">
+                <p class="product-name">{{ item.name }}</p>
+                <small>
+                    Precio: Q{{ item.price | number:'1.2-2' }}, 
+                    Cantidad: {{ item.quantity }}, 
+                    Descuento: {{ item.discount }}%
+                </small>
+                <p class="product-total">Q{{ item.total | number:'1.2-2' }}</p>
+            </div>
+        </div>
+        
+        <ng-template #emptyCart>
+            <div class="empty-cart">
+                <span class="material-icons">shopping_cart</span>
+                <p>No hay productos agregados</p>
+            </div>
+        </ng-template>
+        
+        <div class="sale-summary" *ngIf="cartItems.length > 0">
+            <div class="total-amount">
+                <span>Total:</span>
+                <span>Q{{ totalAmount | number:'1.2-2' }}</span>
+            </div>
+            
+            <div class="payment-fields" *ngIf="saleConfirmed">
+                <div class="form-group">
+                    <label>Monto recibido</label>
+                    <input type="number" [(ngModel)]="amountReceived" 
+                           (input)="calculateChange()" 
+                           min="0" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Cambio</label>
+                    <input type="number" [(ngModel)]="changeAmount" readonly>
+                </div>
+            </div>
+            
+            <div class="sale-actions">
+                <button class="btn-confirm" (click)="confirmSale()" 
+                        [disabled]="cartItems.length === 0 || isLoading">
+                    {{ saleConfirmed ? 'Modificar' : 'Confirmar' }}
+                </button>
+                <button class="btn-pay" (click)="processPayment()" 
+                        [disabled]="!saleConfirmed || changeAmount < 0 || isLoading || amountReceived <= 0">
+                    {{ isLoading ? 'Procesando...' : 'Pagar' }}
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="products-section">
+        <div class="products-header">
+            <div class="categories-scroller">
+                <button class="btn-scroll" (click)="scrollCategories(-1)" [disabled]="categoryScrollStart === 0">
+                    <span class="material-icons">chevron_left</span>
+                </button>
+                
+                <div class="categories-container">
+                    <div class="categories-list" [style.transform]="'translateX(' + (-categoryScrollStart * 150) + 'px)'">
+                        <button *ngFor="let category of categories" 
+                                [class.active]="selectedCategory === category.idCategory"
+                                (click)="selectCategory(category.idCategory)">
+                            {{ category.categoryName }}
+                        </button>
+                    </div>
+                </div>
+                
+                <button class="btn-scroll" (click)="scrollCategories(1)" 
+                        [disabled]="categoryScrollStart >= categories.length - visibleCategories">
+                    <span class="material-icons">chevron_right</span>
+                </button>
+            </div>
+            
+            <app-input-search
+                placeholder="Buscar productos..."
+                (searchChange)="handleSearch($event)">
+            </app-input-search>
+        </div>
+        
+        <div class="products-grid">
+            <div *ngIf="loadingProducts" class="loading-products">
+                <span class="material-icons spin">refresh</span>
+                <p>Cargando productos...</p>
+            </div>
+            
+            <div class="product-card" *ngFor="let product of filteredProducts" (click)="openAddProductModal(product)">
+                <div class="product-image">
+                    <img [src]="product.imageBase64" 
+                         alt="{{ product.description }}" *ngIf="product.imageBase64">
+                    <span class="material-icons" *ngIf="!product.imageBase64">image_not_supported</span>
+                </div>
+                <p class="product-title">{{ product.description }}</p>
+                <small>
+                    <strong>Stock:</strong> {{ product.totalStock | number }}<br>
+                    <strong>Precio:</strong> Q{{ (product.salePrice > 0 ? product.salePrice : product.priceBuy) | number:'1.2-2' }}
+                </small>
+                <button class="btn-add">Agregar</button>
+            </div>
+            
+            <div class="no-results" *ngIf="filteredProducts.length === 0 && !loadingProducts">
+                <span class="material-icons">search_off</span>
+                <p>No se encontraron productos</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div *ngIf="showAddModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>Agregar producto</h2>
+        
+        <div class="modal-body">
+            <div class="product-image-large">
+                <img [src]="selectedProduct?.imageBase64" 
+                     *ngIf="selectedProduct?.imageBase64">
+                <span class="material-icons" *ngIf="!selectedProduct?.imageBase64">image_not_supported</span>
+            </div>
+            
+            <div class="product-details">
+                <h3>{{ selectedProduct?.description }}</h3>
+                <p>Precio: Q{{ (selectedProduct?.salePrice || selectedProduct?.priceBuy) | number:'1.2-2' }}</p>
+                <p>Stock disponible: {{ selectedProduct?.totalStock | number }}</p>
+                
+                <div class="form-group">
+                    <label>Cantidad</label>
+                    <input type="number" [(ngModel)]="productQuantity" 
+                           min="1" [max]="selectedProduct?.totalStock || null"
+                           (change)="validateQuantity()">
+                    <div *ngIf="quantityError" class="error-message">
+                        {{ quantityError }}
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Descuento (%)</label>
+                    <input type="number" [(ngModel)]="productDiscount" 
+                           min="0" max="100" (change)="validateDiscount()">
+                    <div *ngIf="discountError" class="error-message">
+                        {{ discountError }}
+                    </div>
+                </div>
+                
+                <div class="price-summary">
+                    <p>Subtotal: Q{{ (selectedProductPrice * productQuantity) | number:'1.2-2' }}</p>
+                    <p *ngIf="productDiscount > 0">
+                        Descuento: -Q{{ (selectedProductPrice * productQuantity * productDiscount / 100) | number:'1.2-2' }}
+                    </p>
+                    <p class="total">Total: Q{{ calculateProductTotal() | number:'1.2-2' }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-actions">
+            <button class="btn-submit" (click)="addToCart()" 
+                    [disabled]="quantityError || discountError || isLoading">
+                {{ isLoading ? 'Agregando...' : 'Agregar' }}
+            </button>
+            <button class="btn-cancel" (click)="closeAddModal()" [disabled]="isLoading">
+                Cancelar
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<div *ngIf="showEditModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>Editar producto</h2>
+        
+        <div class="modal-body">
+            <div class="product-image-large">
+                <img [src]="selectedCartItem?.image" 
+                     *ngIf="selectedCartItem?.image">
+                <span class="material-icons" *ngIf="!selectedCartItem?.image">image_not_supported</span>
+            </div>
+            
+            <div class="product-details">
+                <h3>{{ selectedCartItem?.name }}</h3>
+                <p>Precio: Q{{ selectedCartItem?.price | number:'1.2-2' }}</p>
+                <p>Stock disponible: {{ ((selectedCartItem?.stock || 0) + (selectedCartItem?.quantity || 0)) | number }}</p>
+                
+                <div class="form-group">
+                    <label>Cantidad</label>
+                    <input type="number" [(ngModel)]="editQuantity" 
+                           min="1" [max]="(selectedCartItem?.stock || 0) + (selectedCartItem?.quantity || 0)"
+                           (change)="validateEditQuantity()">
+                    <div *ngIf="editQuantityError" class="error-message">
+                        {{ editQuantityError }}
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Descuento (%)</label>
+                    <input type="number" [(ngModel)]="editDiscount" 
+                           min="0" max="100" (change)="validateEditDiscount()">
+                    <div *ngIf="editDiscountError" class="error-message">
+                        {{ editDiscountError }}
+                    </div>
+                </div>
+                
+                <div class="price-summary">
+                    <p>Subtotal: Q{{ (selectedCartItem?.price || 0) * editQuantity | number:'1.2-2' }}</p>
+                    <p *ngIf="editDiscount > 0">
+                        Descuento: -Q{{ (selectedCartItem?.price || 0) * editQuantity * editDiscount / 100 | number:'1.2-2' }}
+                    </p>
+                    <p class="total">Total: Q{{ calculateEditTotal() | number:'1.2-2' }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-actions">
+            <button class="btn-submit" (click)="updateCartItem()" 
+                    [disabled]="editQuantityError || editDiscountError || isLoading">
+                {{ isLoading ? 'Actualizando...' : 'Actualizar' }}
+            </button>
+            <button class="btn-cancel" (click)="closeEditModal()" [disabled]="isLoading">
+                Cancelar
+            </button>
+            <button class="btn-delete" (click)="removeFromCart()" [disabled]="isLoading">
+                Eliminar
+            </button>
+        </div>
+    </div>
+</div> -->
