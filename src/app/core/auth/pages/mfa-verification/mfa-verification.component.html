@@ -1,0 +1,37 @@
+<div class="container">
+  <div class="image-section">
+    <div class="image-grid">
+      <img src="/img/1.jpg" alt="Herramientas">
+      <img src="/img/2.jpg" alt="Herramientas">
+      <img src="/img/3.jpg" alt="Herramientas">
+      <img src="/img/4.jpg" alt="Herramientas">
+    </div>
+  </div>
+
+  <div class="login-container">
+    <h2>VERIFICACIÓN EN DOS PASOS</h2>
+    <p>Ingrese el código de verificación que fue enviado a su correo electrónico.</p>
+
+    <form [formGroup]="mfaForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="code">Código de Verificación:</label>
+        <input type="text" id="code" formControlName="code" placeholder="Código de 6 dígitos" required maxlength="6" />
+        <div *ngIf="mfaForm.get('code')?.invalid && mfaForm.get('code')?.touched" class="error-message">
+          <small *ngIf="mfaForm.get('code')?.errors?.['required']">El código de verificación es obligatorio.</small>
+          <small *ngIf="mfaForm.get('code')?.errors?.['minlength'] || mfaForm.get('code')?.errors?.['maxlength']">El código debe tener 6 dígitos.</small>
+        </div>
+      </div>
+
+      <hr>
+
+      <button type="submit" class="btn-enter" [disabled]="isLoading">
+        {{ isLoading ? 'Verificando...' : 'Verificar' }}
+      </button>
+    </form>
+
+    <div class="recovery-link">
+      <a (click)="resendCode()">Reenviar código</a> | 
+      <a routerLink="/auth/login">Volver al login</a>
+    </div>
+  </div>
+</div>

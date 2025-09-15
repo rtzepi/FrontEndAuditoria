@@ -9,7 +9,7 @@
   </div>
 
   <div class="login-container">
-    <h2>BIENVENIDO A FERRETERIA "EL CONDOR"</h2>
+    <h2>BIENVENIDO"</h2>
 
     <div *ngIf="formSubmitted && loginForm.invalid" class="general-error-message">
       <small>Es necesario llenar todos los campos correctamente.</small>
@@ -38,5 +38,10 @@
         {{ isLoading ? 'Cargando...' : 'Ingresar' }}
       </button>
     </form>
+
+    <!-- Agregar enlace para recuperación de contraseña -->
+    <div class="recovery-link">
+      <a (click)="navigateToRecovery()">¿Olvidaste tu contraseña?</a>
+    </div>
   </div>
 </div>

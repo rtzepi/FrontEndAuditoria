@@ -281,40 +281,57 @@ export class UserComponent implements OnInit {
       });
   }
 
-  confirmResetPassword(user: IUser) {
-    Swal.fire({
-      title: '¿Restaurar contraseña?',
-      text: `¿Estás seguro de restaurar la contraseña de ${user.userName}? La nueva contraseña será enviada al correo ${user.email}`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#ffc107',
-      cancelButtonColor: '#6c757d',
-      confirmButtonText: 'Sí, restaurar',
-      cancelButtonText: 'Cancelar'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        this.resetPassword(user.idUser);
-      }
-    });
-  }
-
-  resetPassword(id: number) {
-    this.isLoading = true;
-    this.userService.resetPassword(id).subscribe({
-      next: (response: IResetPasswordResponse) => {
-        if (response.isSuccess) {
-          Swal.fire('Éxito', response.message || 'Contraseña restaurada correctamente. Se ha enviado un correo al usuario con la nueva contraseña.', 'success');
-        } else {
-          Swal.fire('Error', response.error || 'Error al restaurar contraseña', 'error');
-        }
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error completo:', error);
-        this.handleError('Error al restaurar contraseña', error);
-      }
-    });
-}
+  // confirmResetPassword(user: IUser) {
+  //   Swal.fire({
+  //     title: '¿Restaurar contraseña?',
+  //     text: `¿Estás seguro de restaurar la contraseña de ${user.userName}? La nueva contraseña será enviada al correo ${user.email}`,
+  //     icon: 'warning',
+  //     showCancelButton: true,
+  //     confirmButtonColor: '#ffc107',
+  //     cancelButtonColor: '#6c757d',
+  //     confirmButtonText: 'Sí, restaurar',
+  //     cancelButtonText: 'Cancelar'
+  //   }).then((result) => {
+  //     if (result.isConfirmed) {
+  //       this.isLoading = true;
+        
+  //       // Llamar al servicio para enviar el correo de restablecimiento
+  //       this.userService.setPassword(user.idUser).subscribe({
+  //         next: (response: IResetPasswordResponse) => {
+  //           this.isLoading = false;
+            
+  //           if (response.isSuccess) {
+  //             Swal.fire({
+  //               icon: 'success',
+  //               title: 'Correo enviado',
+  //               text: response.message || 'Se ha enviado un correo con instrucciones para restablecer la contraseña.',
+  //               timer: 3000,
+  //               showConfirmButton: false
+  //             });
+  //           } else {
+  //             Swal.fire({
+  //               icon: 'error',
+  //               title: 'Error',
+  //               text: response.error || 'Error al enviar el correo de restablecimiento.',
+  //               timer: 3000,
+  //               showConfirmButton: false
+  //             });
+  //           }
+  //         },
+  //         error: (error:any) => {
+  //           this.isLoading = false;
+  //           Swal.fire({
+  //             icon: 'error',
+  //             title: 'Error',
+  //             text: 'Ocurrió un problema al intentar enviar el correo de restablecimiento.',
+  //             timer: 3000,
+  //             showConfirmButton: false
+  //           });
+  //         }
+  //       });
+  //     }
+  //   });
+  // }
 
   confirmDelete(user: IUser) {
     Swal.fire({

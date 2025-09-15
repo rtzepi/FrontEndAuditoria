@@ -52,19 +52,34 @@ export class LoginComponent {
         console.log('Respuesta del servicio:', response);
 
         if (response.isSuccess) {
-          Swal.fire({
-            icon: "success",
-            title: "Acceso concedido",
-            text: "Accediendo al sistema...",
-            timer: 1000,
-            showConfirmButton: false
-          }).then(() => {
-            if (response.value?.isFirstLogin == false) { 
-              this.router.navigate(['/home']);
-            } else {
+          // Verificar si requiere MFA
+          if (response.value?.requiresMFA) {
+            Swal.close();
+            // Redirigir a verificación MFA, pasando el userId
+            this.router.navigate(['/auth/mfa-verification'], { 
+              state: { userId: response.value.userId } 
+            });
+          } else if (response.value?.isFirstLogin) {
+            Swal.fire({
+              icon: "success",
+              title: "Acceso concedido",
+              text: "Debe cambiar su contraseña para continuar.",
+              timer: 1000,
+              showConfirmButton: false
+            }).then(() => {
               this.router.navigate(['/change-password']);
-            }
-          });
+            });
+          } else {
+            Swal.fire({
+              icon: "success",
+              title: "Acceso concedido",
+              text: "Accediendo al sistema...",
+              timer: 1000,
+              showConfirmButton: false
+            }).then(() => {
+              this.router.navigate(['/home']);
+            });
+          }
         } else {
           Swal.fire({
             icon: "error",
@@ -90,4 +105,8 @@ export class LoginComponent {
       },
     });
   }
+
+navigateToRecovery(): void {
+  this.router.navigate(['/password-recovery']); // Debe coincidir con la ruta definida
+}
 }

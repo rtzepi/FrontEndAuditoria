@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment.development';
-import { IUser, IUserResponse, IEmployee, IRole, IResetPasswordResponse } from '../../shared/models/IUser';
+import { IUser, IUserResponse, IEmployee, IRole, IResetPasswordResponse, IResetPasswordRequest, IResetPasswordWithTokenRequest } from '../../shared/models/IUser';
 
 @Injectable({
   providedIn: 'root'
@@ -36,10 +36,18 @@ export class UserService {
     return this.http.put<IUserResponse>(`${this.apiUrl}/${id}`, userData, { headers });
   }
 
-  resetPassword(id: number): Observable<IUserResponse> {
+  updateMFASettings(id: number, mfaEnabled: boolean): Observable<IUserResponse> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post<IUserResponse>(
-      `${this.apiUrl}/resetPassword`, id, { headers });
+    return this.http.patch<IUserResponse>(`${this.apiUrl}/${id}/mfa`, { mfaEnabled }, { headers });
+  }
+
+  setPassword(request: IResetPasswordWithTokenRequest){
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.post<IResetPasswordResponse>(
+      `${this.apiUrl}/set-password`, 
+      request, 
+      { headers }
+    );
   }
 
   deleteUser(id: number): Observable<IUserResponse> {

@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './pages/login/login.component';
 import { ChangePasswordComponent } from './pages/change-password/change-password.component';
-import { SalesComponent } from '../../features/sales/pages/sales/sales.component';
-import { InventoryComponent } from '../../features/inventory/pages/inventory/inventory.component';
+import { PasswordRecoveryComponent } from './pages/password-recovery/password-recovery.component';
+import { MFAVerificationComponent } from './pages/mfa-verification/mfa-verification.component';
 
 export const AuthRoutes: Routes = [
     {
@@ -14,15 +14,16 @@ export const AuthRoutes: Routes = [
         path: 'login', component: LoginComponent
     },
     {
-        path: 'change-password',
+        path: 'set-password',
         component: ChangePasswordComponent
     },
     {
-        path: 'sales',
-        component: SalesComponent
+        path: 'mfa-verification',
+        component: MFAVerificationComponent
     },
     {
-        path: 'inventory',
-        component: InventoryComponent
+        path: 'password-recovery',
+        component: PasswordRecoveryComponent
     }
+
 ];

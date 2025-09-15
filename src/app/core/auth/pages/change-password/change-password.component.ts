@@ -1,8 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { AuthService } from '../../../services/auth.service';
+import { Router, ActivatedRoute } from '@angular/router';
+import { UserService } from '../../../services/user.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -12,12 +12,12 @@ import Swal from 'sweetalert2';
   templateUrl: './change-password.component.html',
   styleUrls: ['./change-password.component.scss'],
 })
-export class ChangePasswordComponent {
+export class ChangePasswordComponent implements OnInit {
   changePasswordForm: FormGroup;
   isLoading: boolean = false;
   showNewPassword: boolean = false;
   showConfirmPassword: boolean = false;
-
+  token: string = '';
 
   weakPasswords = [
     '1234567', '12345678', '123456789', '1234567890',
@@ -25,7 +25,12 @@ export class ChangePasswordComponent {
     '1111111', '0000000', '987654321', '123123123'
   ];
 
-  constructor(private fb: FormBuilder, private router: Router, private authService: AuthService) {
+  constructor(
+    private fb: FormBuilder, 
+    private router: Router, 
+    private userService: UserService,
+    private route: ActivatedRoute
+  ) {
     this.changePasswordForm = this.fb.group(
       {
         newPassword: ['', [
@@ -43,11 +48,26 @@ export class ChangePasswordComponent {
     );
   }
 
+  ngOnInit() {
+    // Obtener el token de los parámetros de la URL
+    this.route.queryParams.subscribe(params => {
+      this.token = params['token'] || '';
+      
+      if (!this.token) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Token no válido o faltante.',
+          timer: 3000,
+          showConfirmButton: false
+        }).then(() => {
+          this.router.navigate(['/login']);
+        });
+      }
+    });
+  }
 
   caracteresEspeciales = '!@#$%^&*';
-
-
-  
 
   passwordStrengthValidator(control: AbstractControl): ValidationErrors | null {
     const value = control.value;
@@ -65,7 +85,6 @@ export class ChangePasswordComponent {
 
     return Object.keys(errors).length > 0 ? { passwordStrength: errors } : null;
   }
-
 
   weakPasswordValidator(control: AbstractControl): ValidationErrors | null {
     const value = control.value;
@@ -136,46 +155,57 @@ export class ChangePasswordComponent {
       return;
     }
 
+    if (!this.token) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Token no válido o faltante.',
+        timer: 3000,
+        showConfirmButton: false
+      });
+      return;
+    }
+
     Swal.fire({
-      title: 'Cambiando contraseña',
+      title: 'Estableciendo contraseña',
       text: 'Espere por favor...',
       showConfirmButton: false,
       allowOutsideClick: false
     });
     Swal.showLoading();
 
-    const { newPassword, confirmPassword } = this.changePasswordForm.value;
+    const { newPassword } = this.changePasswordForm.value;
 
-    this.authService.changePassword(newPassword, confirmPassword).subscribe({
+    this.userService.setPassword({ token: this.token, newPassword }).subscribe({
       next: (response) => {
         this.isLoading = false;
 
         if (response.isSuccess) {
           Swal.fire({
             icon: 'success',
-            title: 'Contraseña cambiada',
-            text: 'Tu contraseña ha sido cambiada correctamente.',
+            title: 'Contraseña establecida',
+            text: response.message || 'Tu contraseña ha sido establecida correctamente.',
             timer: 2000,
             showConfirmButton: false
           }).then(() => {
-            this.router.navigate(['/home']);
+            this.router.navigate(['/login']);
           });
         } else {
           Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: response.error || 'No se pudo cambiar la contraseña.',
+            text: response.error || 'No se pudo establecer la contraseña.',
             timer: 3000,
             showConfirmButton: false
           });
         }
       },
-      error: () => {
+      error: (error:any) => {
         this.isLoading = false;
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: 'Ocurrió un problema al cambiar la contraseña. Inténtalo de nuevo.',
+          text: error.error?.error || 'Ocurrió un problema al establecer la contraseña. Inténtalo de nuevo.',
           timer: 3000,
           showConfirmButton: false
         });
@@ -183,112 +213,3 @@ export class ChangePasswordComponent {
     });
   }
 }
-
-
-
-
-
-
-
-// import { Component } from '@angular/core';
-// import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-// import { CommonModule } from '@angular/common';
-// import { Router } from '@angular/router';
-// import { AuthService } from '../../../services/auth.service';
-// import Swal from 'sweetalert2';
-
-// @Component({
-//   selector: 'app-change-password',
-//   standalone: true,
-//   imports: [CommonModule, ReactiveFormsModule],
-//   templateUrl: './change-password.component.html',
-//   styleUrls: ['./change-password.component.scss'],
-// })
-// export class ChangePasswordComponent {
-//   changePasswordForm: FormGroup;
-//   isLoading: boolean = false;
-
-//   constructor(private fb: FormBuilder, private router: Router, private authService: AuthService) {
-//     this.changePasswordForm = this.fb.group(
-//       {
-//         newPassword: ['', [Validators.required, Validators.minLength(6)]],
-//         confirmPassword: ['', [Validators.required]]
-//       },
-//       {
-//         validators: this.passwordMatchValidator
-//       }
-//     );
-//   }
-
-//   passwordMatchValidator(group: FormGroup) {
-//     const password = group.get('newPassword')?.value;
-//     const confirmPassword = group.get('confirmPassword')?.value;
-    
-//     if (password !== confirmPassword) {
-//       group.get('confirmPassword')?.setErrors({ passwordMismatch: true });
-//       return { passwordMismatch: true };
-//     }
-//     return null;
-//   }
-
-//   onSubmit() {
-//     if (this.changePasswordForm.invalid) {
-//       if (this.changePasswordForm.get('confirmPassword')?.hasError('passwordMismatch')) {
-//         Swal.fire({
-//           icon: 'warning',
-//           title: 'Las contraseñas no coinciden',
-//           text: 'Por favor, asegúrate de que ambas contraseñas sean iguales.',
-//           timer: 3000,
-//           showConfirmButton: false
-//         });
-//       }
-//       return;
-//     }
-
-//     Swal.fire({
-//       title: 'Cambiando contraseña',
-//       text: 'Espere por favor...',
-//       showConfirmButton: false,
-//       allowOutsideClick: false
-//     });
-//     Swal.showLoading();
-
-//     const { newPassword, confirmPassword } = this.changePasswordForm.value;
-
-//     this.authService.changePassword(newPassword, confirmPassword).subscribe({
-//       next: (response) => {
-//         this.isLoading = false;
-
-//         if (response.isSuccess) {
-//           Swal.fire({
-//             icon: 'success',
-//             title: 'Contraseña cambiada',
-//             text: 'Tu contraseña ha sido cambiada correctamente.',
-//             timer: 2000,
-//             showConfirmButton: false
-//           }).then(() => {
-//             this.router.navigate(['/home']);
-//           });
-//         } else {
-//           Swal.fire({
-//             icon: 'error',
-//             title: 'Error',
-//             text: response.error || 'No se pudo cambiar la contraseña.',
-//             timer: 3000,
-//             showConfirmButton: false
-//           });
-//         }
-//       },
-//       error: () => {
-//         this.isLoading = false;
-//         Swal.fire({
-//           icon: 'error',
-//           title: 'Error',
-//           text: 'Ocurrió un problema al cambiar la contraseña. Inténtalo de nuevo.',
-//           timer: 3000,
-//           showConfirmButton: false
-//         });
-//       }
-//     });
-//   }
-// }

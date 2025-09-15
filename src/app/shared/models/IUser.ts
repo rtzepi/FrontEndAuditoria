@@ -4,6 +4,7 @@ export interface IUser {
     status: string;
     isChangePass: boolean;
     lastLogin: string | null;
+    MFAEnabled: boolean;
     idEmployee: number;
     idRole: number;
     picture: string | null;
@@ -42,9 +43,38 @@ export interface IUserResponse {
     message?: string;
 }
 
-
 export interface IResetPasswordResponse {
     isSuccess: boolean;
     message?: string;
     error?: string | null;
+}
+
+export interface ILoginResponse {
+    requiresMFA?: boolean;
+    userId?: number;
+    token?: string;
+    isFirstLogin?: boolean;
+}
+
+export interface IMFAVerificationRequest {
+    userId: number;
+    code: string;
+}
+
+export interface IPasswordResetRequest {
+    email: string;
+}
+
+export interface IValidateTokenRequest {
+    token: string;
+}
+
+export interface IResetPasswordWithTokenRequest {
+    token: string;
+    newPassword: string;
+}
+
+// Nueva interfaz para el endpoint reset-password
+export interface IResetPasswordRequest {
+    idUser: number;
 }
