@@ -71,6 +71,7 @@ export class MainLayoutComponent implements OnInit {
       next: (response: IResult<any>) => {
         if (response.isSuccess) {
           this.menuItems = response.value.menus;
+          console.log(this.menuItems)
         }
       },
       error: (error) => {

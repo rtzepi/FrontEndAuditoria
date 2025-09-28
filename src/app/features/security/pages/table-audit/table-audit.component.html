@@ -1,0 +1,61 @@
+<link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+<div class="container">
+    <button class="btn-back" (click)="goBack()">
+        <span class="material-icons">arrow_back</span>
+        Volver
+    </button>
+    <div class="header">
+        <h2>Configuración de Tablas Auditables</h2>
+        <div class="header-actions">
+            <app-input-search placeholder="Buscar tablas..." (searchChange)="handleSearch($event)">
+            </app-input-search>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Esquema</th>
+                <th>Nombre de Tabla</th>
+                <th>Auditar</th>
+                <th>Estado Trigger</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let table of paginatedTables">
+                <td>{{ table.schemaName }}</td>
+                <td>{{ table.tableName }}</td>
+                <td>
+                    <span [class]="getAuditStatusClass(table.auditar)">
+                        {{ getAuditStatus(table.auditar) }}
+                    </span>
+                </td>
+                <td>
+                    <span [class]="getTriggerStatusClass(table.triggerExists)">
+                        {{ getTriggerStatus(table.triggerExists) }}
+                    </span>
+                </td>
+                <td class="btn-actions">
+                    <label class="switch">
+                        <input type="checkbox" [checked]="table.auditar" (change)="toggleAudit(table)"
+                            [disabled]="isLoading">
+                        <span class="slider round"></span>
+                    </label>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="pagination-controls" *ngIf="tables.length > itemsPerPage">
+        <button (click)="previousPage()" [disabled]="currentPage === 1" class="btn-pagination">
+            Anterior
+        </button>
+        <span>Página {{currentPage}} de {{totalPages}}</span>
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages" class="btn-pagination">
+            Siguiente
+        </button>
+    </div>
+</div>

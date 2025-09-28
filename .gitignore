@@ -42,4 +42,4 @@ testem.log
 Thumbs.db
 
 # Environment configurations (add if sensitive data exists in your environments)
-src/environments/
+src/app/environments/

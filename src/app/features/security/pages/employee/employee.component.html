@@ -26,6 +26,7 @@
                 <th>Nombre Completo</th>
                 <th>Email</th>
                 <th>Teléfono</th>
+                <th>CUI</th>
                 <th>Estado</th>
                 <th>Autorizado</th>
                 <th>Acciones</th>
@@ -52,6 +53,7 @@
                 </td>
                 <td>{{ employee.email }}</td>
                 <td>{{ employee.phoneNumber }}</td>
+                <td>{{ employee.cui || 'N/A' }}</td>
                 <td>
                     <span [class.active]="employee.status === 'E'" [class.inactive]="employee.status !== 'E'">
                         {{ employee.status === 'E' ? 'Activo' : 'Inactivo' }}
@@ -111,6 +113,24 @@
                         [class.warning]="getRemainingChars('middleName', MAX_NAME_LENGTH) < 10"
                         [class.danger]="getRemainingChars('middleName', MAX_NAME_LENGTH) === 0">
                         Caracteres restantes: {{ getRemainingChars('middleName', MAX_NAME_LENGTH) }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>CUI</label>
+                    <input type="text" [(ngModel)]="newEmployee.cui" name="cui"
+                        maxlength="13" #cui="ngModel"
+                        (input)="handleInput('cui', MAX_CUI_LENGTH, $event)"
+                        (keypress)="validateCUI($event)">
+                    <div class="char-counter"
+                        [class.warning]="getRemainingChars('cui', MAX_CUI_LENGTH) < 5"
+                        [class.danger]="getRemainingChars('cui', MAX_CUI_LENGTH) === 0">
+                        Caracteres restantes: {{ getRemainingChars('cui', MAX_CUI_LENGTH) }}
+                    </div>
+                    <div *ngIf="cui.invalid && (cui.dirty || cui.touched)" class="error-message">
+                        El CUI debe tener máximo 13 dígitos
                     </div>
                 </div>
             </div>

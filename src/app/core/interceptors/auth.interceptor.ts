@@ -13,7 +13,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     ? req.clone({
       setHeaders: {
 
-        Authorization: `Bearer ${JSON.parse(currentUser)}`
+        Authorization: `Bearer ${currentUser}`
       }
     })
     : req;

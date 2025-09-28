@@ -6,7 +6,7 @@
 /* Estilos del sidenav */
 .sidenav {
   width: 250px;
-  background-color: #ff9800;
+  background-color: #00358b;
   color: white;
   display: flex;
   flex-direction: column;
@@ -31,12 +31,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 64px;
+    min-height: 200px;
     box-sizing: border-box;
 
     img {
-      max-height: 40px;
+      max-height: 100px;
       width: auto;
+      border-radius: 50px;
     }
   }
 
@@ -58,14 +59,18 @@
       transition: all 0.2s ease;
 
       &:hover {
-        background-color: white;
-        color: #ff9800;
+        background-color: rgb(6, 85, 255);
+        color: #007bff;
       }
 
       &.active {
-        background-color: white;
-        color: #ff9800;
+        background-color: rgb(0, 69, 208);
+        color: #0051ff;
         font-weight: 500;
+      }
+
+      span, mat-icon{
+        color: rgb(255, 255, 255);
       }
     }
   }
@@ -74,8 +79,8 @@
 /* Estilos de la barra de herramientas */
 .toolbar {
   background-color: white;
-  color: #333;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: #090909;
+  box-shadow: 0 2px 4px rgba(255, 253, 253, 0.917);
   z-index: 2;
   height: 64px;
   display: flex;
@@ -159,7 +164,7 @@
     
     mat-icon {
       margin-right: 8px !important;
-      color: #666 !important;
+      color: #4e1ed0 !important;
     }
   }
 }
@@ -309,14 +314,14 @@
     .empty-state {
       padding: 30px 20px;
       text-align: center;
-      color: #ff9800;
+      color: #0400ff;
       
       mat-icon {
         font-size: 50px;
         width: 50px;
         height: 50px;
         margin-bottom: 10px;
-        color: #ffcc80;
+        color: #80ddff;
       }
       
       p {

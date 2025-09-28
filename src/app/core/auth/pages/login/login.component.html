@@ -9,6 +9,76 @@
   </div>
 
   <div class="login-container">
+    <h2>BIENVENIDO</h2>
+
+    <div *ngIf="formSubmitted && loginForm.invalid" class="general-error-message">
+      <small>Es necesario llenar todos los campos correctamente.</small>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="userName">Nombre de Usuario:</label>
+        <input type="text" id="userName" formControlName="userName" placeholder="Nombre de usuario" required />
+        <div *ngIf="formSubmitted && loginForm.get('userName')?.invalid" class="error-message">
+          <small *ngIf="loginForm.get('userName')?.errors?.['required']">El nombre de usuario es obligatorio.</small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña:</label>
+        <input type="password" id="password" formControlName="password" placeholder="Contraseña" required />
+        <div *ngIf="formSubmitted && loginForm.get('password')?.invalid" class="error-message">
+          <small *ngIf="loginForm.get('password')?.errors?.['required']">La contraseña es obligatoria.</small>
+        </div>
+      </div>
+
+      <!-- Campo MFA (solo visible cuando requiresMFA es true) -->
+      <div class="form-group" *ngIf="requiresMFA">
+        <label for="mfaCode">Código de Verificación (MFA):</label>
+        <input type="text" id="mfaCode" formControlName="mfaCode" placeholder="Ingresa el código de 6 dígitos" required />
+        <div *ngIf="formSubmitted && loginForm.get('mfaCode')?.invalid" class="error-message">
+          <small *ngIf="loginForm.get('mfaCode')?.errors?.['required']">El código de verificación es obligatorio.</small>
+        </div>
+        <div class="mfa-help">
+          <small>
+            Abre tu aplicación de autenticación (Google Authenticator, Microsoft Authenticator, etc.) 
+            y ingresa el código de 6 dígitos que se muestra.
+            <a href="javascript:void(0)" (click)="resendMFA()">¿Necesitas ayuda?</a>
+          </small>
+        </div>
+      </div>
+
+      <hr>
+
+      <button type="submit" class="btn-enter" [disabled]="isLoading">
+        {{ isLoading ? 'Cargando...' : requiresMFA ? 'Verificar Código' : 'Ingresar' }}
+      </button>
+    </form>
+
+    <!-- Agregar enlace para recuperación de contraseña -->
+    <div class="recovery-link">
+      <a (click)="navigateToRecovery()">¿Olvidaste tu contraseña?</a>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+<!-- <div class="container">
+  <div class="image-section">
+    <div class="image-grid">
+      <img src="/img/1.jpg" alt="Herramientas">
+      <img src="/img/2.jpg" alt="Herramientas">
+      <img src="/img/3.jpg" alt="Herramientas">
+      <img src="/img/4.jpg" alt="Herramientas">
+    </div>
+  </div>
+
+  <div class="login-container">
     <h2>BIENVENIDO"</h2>
 
     <div *ngIf="formSubmitted && loginForm.invalid" class="general-error-message">
@@ -39,9 +109,8 @@
       </button>
     </form>
 
-    <!-- Agregar enlace para recuperación de contraseña -->
     <div class="recovery-link">
       <a (click)="navigateToRecovery()">¿Olvidaste tu contraseña?</a>
     </div>
   </div>
-</div>
+</div> -->

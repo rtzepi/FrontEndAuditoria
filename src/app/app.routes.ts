@@ -3,7 +3,8 @@ import { LoginComponent } from './core/auth/pages/login/login.component';
 import { MainLayoutComponent } from './core/layout/main-layout/main-layout.component';
 import { ChangePasswordComponent } from './core/auth/pages/change-password/change-password.component';
 import { HomeComponent } from './features/home/home.component';
-import { PasswordRecoveryComponent } from './core/auth/pages/password-recovery/password-recovery.component'; // Añadir esta importación
+import { ForgetPasswordComponent } from './core/auth/pages/forget-password/forget-password.component'; // Añadir esta importación
+import { ResetPasswordComponent } from './core/auth/pages/reset-password/reset-password.component';
 
 export const routes: Routes = [
   {
@@ -20,8 +21,12 @@ export const routes: Routes = [
     component: ChangePasswordComponent
   },
   {
-    path: 'password-recovery', 
-    component: PasswordRecoveryComponent
+    path: 'forget-password', 
+    component: ForgetPasswordComponent
+  },
+  {
+    path: 'reset-password', 
+    component: ResetPasswordComponent
   },
   {
     path: '',
@@ -30,10 +35,6 @@ export const routes: Routes = [
       {
         path: 'home',
         component: HomeComponent
-      },
-      {
-        path:'configuration',
-        loadChildren: () => import('./features/configuration/configuration.routes').then(m => m.CONF_ROUTES)
       },
       {
         path:'security',

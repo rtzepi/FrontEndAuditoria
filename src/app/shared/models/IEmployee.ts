@@ -26,6 +26,7 @@ export interface IEmployee {
     created_by?: number;
     deleted_at?: string | null;
     picture: string;
+    cui: string | null;
 }
 
 export interface IEmployeeSingleResponse {

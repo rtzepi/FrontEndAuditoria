@@ -36,6 +36,7 @@ export class EmployeeComponent implements OnInit {
   readonly MAX_LASTNAME_LENGTH = 50;
   readonly MAX_PHONE_LENGTH = 8;
   readonly MAX_EMAIL_LENGTH = 100;
+  readonly MAX_CUI_LENGTH = 13;
 
   currentPage = 1;
   itemsPerPage = 10;
@@ -54,7 +55,8 @@ export class EmployeeComponent implements OnInit {
     isAuthorization: true,
     imgBase64: null,
     idPicture: null,
-    picture: ''
+    picture: '',
+    cui: null
   };
 
   constructor(private employeeService: EmployeeService, private location: Location) {}
@@ -93,24 +95,33 @@ export class EmployeeComponent implements OnInit {
     });
   }
 
-  handleInput(field: 'firstName' | 'middleName' | 'fatherLastName' | 'motherLastName' | 'email' | 'phoneNumber', 
+  handleInput(field: 'firstName' | 'middleName' | 'fatherLastName' | 'motherLastName' | 'email' | 'phoneNumber' | 'cui', 
               maxLength: number, event: Event) {
     const input = event.target as HTMLInputElement;
     const value = input.value;
     
     if (value.length > maxLength) {
       input.value = value.substring(0, maxLength);
-      this.newEmployee[field] = input.value;
+      this.newEmployee[field] = input.value as any;
     }
   }
 
-  getRemainingChars(field: 'firstName' | 'middleName' | 'fatherLastName' | 'motherLastName' | 'email' | 'phoneNumber', 
+  getRemainingChars(field: 'firstName' | 'middleName' | 'fatherLastName' | 'motherLastName' | 'email' | 'phoneNumber' | 'cui', 
                   maxLength: number): number {
     const value = this.newEmployee[field] || '';
     return maxLength - value.length;
   }
 
   validateNumber(event: KeyboardEvent): boolean {
+    const charCode = (event.which) ? event.which : event.keyCode;
+    if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+      event.preventDefault();
+      return false;
+    }
+    return true;
+  }
+
+  validateCUI(event: KeyboardEvent): boolean {
     const charCode = (event.which) ? event.which : event.keyCode;
     if (charCode > 31 && (charCode < 48 || charCode > 57)) {
       event.preventDefault();
@@ -158,6 +169,12 @@ export class EmployeeComponent implements OnInit {
       return;
     }
 
+    // Validación de CUI (opcional, máximo 13 dígitos)
+    if (this.newEmployee.cui && this.newEmployee.cui.length > this.MAX_CUI_LENGTH) {
+      Swal.fire('Error', `El CUI no puede exceder ${this.MAX_CUI_LENGTH} dígitos`, 'error');
+      return;
+    }
+
     if (this.employeeForm.invalid) {
       return;
     }
@@ -187,6 +204,7 @@ export class EmployeeComponent implements OnInit {
       (employee.motherLastName?.toLowerCase()?.includes(term)) ||
       (employee.email?.toLowerCase().includes(term)) ||
       (employee.phoneNumber?.includes(term)) ||
+      (employee.cui?.includes(term)) ||
       (employee.idEmployee?.toString().includes(term))
     );
   }
@@ -363,7 +381,8 @@ export class EmployeeComponent implements OnInit {
       isAuthorization: true,
       imgBase64: null,
       idPicture: null,
-      picture: ''
+      picture: '',
+      cui: null
     };
     this.isEditing = false;
     this.currentEmployeeId = null;

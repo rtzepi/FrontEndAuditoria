@@ -25,7 +25,8 @@ export class EmployeeService {
       imgBase64: employee.imgBase64,
       idPicture: employee.idPicture || 0,
       isAuthorization: employee.isAuthorization,
-      image: employee.image
+      image: employee.image,
+      cui: employee.cui
     };
   }
 

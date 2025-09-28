@@ -1,7 +1,7 @@
 <mat-sidenav-container class="container">
     <mat-sidenav #sidenav mode="side" [opened]="isMenuOpen()" class="sidenav">
         <div class="logo">
-            <img src="/img/CONDOR.jpeg" alt="El Condor" width="100" height="100">
+            <img src="/LOGOS/7.jpg" alt="El Condor" width="300" height="300">
         </div>
         <mat-nav-list>
             <a mat-list-item *ngFor="let item of menuItems" 
@@ -9,7 +9,7 @@
                routerLinkActive="active"
                (click)="isMenuOpen() ? null : toggleMenu()">
                 <mat-icon>{{ item.icon }}</mat-icon>
-                <span>{{ item.nameMenu }}</span>
+                <span class="menulet">{{ item.nameMenu }}</span>
             </a>
         </mat-nav-list>
     </mat-sidenav>
@@ -19,7 +19,7 @@
             <button mat-icon-button (click)="toggleMenu()">
                 <mat-icon>menu</mat-icon>
             </button>
-            <span class="title">El Condor</span>
+            <span class="title">Seguridad y Auditoría</span>
             <span class="spacer"></span>
             
             <div class="notification-container">
